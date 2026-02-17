@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profit Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <h1>損益入力</h1>
+
+    <form action="/add" method="post">
+        <input type="date" name="date" required><br><br>
+
+        <select name="category">
+            <option value="ギャンブル">ギャンブル</option>
+            <option value="デイトレ">デイトレ</option>
+        </select><br><br>
+
+        <input type="text" name="type" placeholder="種別（例：パチンコ、株など）" required><br><br>
+
+        <input type="number" name="investment" placeholder="投入金額" required><br><br>
+
+        <input type="number" name="return" placeholder="回収金額" required><br><br>
+
+        <button type="submit">登録</button>
+    </form>
+
+    <hr>
+
+    <h2>記録一覧</h2>
+
+    {% for r in records %}
+        <div>
+            {{ r.date }} /
+            {{ r.type }} /
+            {% if r.profit >= 0 %}
+                <span style="color:black;">+{{ r.profit }}</span>
+            {% else %}
+                <span style="color:red;">{{ r.profit }}</span>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+</body>
+</html>
