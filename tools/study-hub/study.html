@@ -1,0 +1,943 @@
+<title>FP2・簿記2級 合格ノート</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&family=BIZ+UDPGothic:wght@400;700&family=Zen+Maru+Gothic:wght@700&display=swap">
+<style>
+:root {
+  /* Layout: a graph-paper study notebook; sticky header + tabs over one column of cards; today's quota marked like a highlighter stroke */
+  --bg: #f5f6fb;
+  --paper-line: rgba(43, 63, 160, 0.055);
+  --surface: #ffffff;
+  --surface-2: #f1f3fa;
+  --ink: #18204a;
+  --ink-2: #474f73;
+  --muted: #676e90;
+  --rule: #dce0ee;
+  --accent: #2b3fa0;
+  --accent-ink: #ffffff;
+  --accent-soft: #e0e5fa;
+  --marker: #ffe066;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --good-ink: #146c2e;
+  --good-bg: #dff0e3;
+  --warn-ink: #774800;
+  --warn-bg: #fcefd2;
+  --crit-ink: #a3261f;
+  --crit-bg: #fae1de;
+  --grid: #e4e7f1;
+  --axis: #c0c6da;
+  --overlay: rgba(12, 16, 40, 0.45);
+  --shadow: 0 6px 20px rgba(24, 32, 74, 0.13);
+  --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+  --font-body: "BIZ UDPGothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+  --font-data: "BIZ UDGothic", "BIZ UDPGothic", "Hiragino Sans", ui-monospace, monospace;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10131f; --paper-line: rgba(142, 162, 255, 0.05); --surface: #171b2b; --surface-2: #1e2336; --ink: #e8eaf6; --ink-2: #b7bdd8; --muted: #8b92b2;
+    --rule: #2a3049; --accent: #8ea2ff; --accent-ink: #0b1030; --accent-soft: #242c55; --marker: rgba(255, 213, 0, 0.3);
+    --series-1: #3987e5; --series-2: #d95926;
+    --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
+    --grid: #252b42; --axis: #3a4260; --overlay: rgba(0, 0, 0, 0.6); --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10131f; --paper-line: rgba(142, 162, 255, 0.05); --surface: #171b2b; --surface-2: #1e2336; --ink: #e8eaf6; --ink-2: #b7bdd8; --muted: #8b92b2;
+  --rule: #2a3049; --accent: #8ea2ff; --accent-ink: #0b1030; --accent-soft: #242c55; --marker: rgba(255, 213, 0, 0.3);
+  --series-1: #3987e5; --series-2: #d95926;
+  --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
+  --grid: #252b42; --axis: #3a4260; --overlay: rgba(0, 0, 0, 0.6); --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { background-color: var(--bg); background-image: linear-gradient(var(--paper-line) 1px, transparent 1px), linear-gradient(90deg, var(--paper-line) 1px, transparent 1px); background-size: 22px 22px; color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.65; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { width: 100%; max-width: 980px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px 2px; }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+h1 { margin: 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
+.brand small { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
+.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { appearance: none; background: none; border: 0; border-bottom: 3px solid transparent; color: var(--ink-2); font: inherit; font-weight: 700; font-size: 0.92rem; padding: 10px 12px 9px; white-space: nowrap; cursor: pointer; min-height: 44px; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 6px; }
+
+main.wrap { display: grid; gap: 16px; padding-block: 16px 64px; }
+.view { display: grid; gap: 16px; min-width: 0; }
+.grid-2 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px; min-width: 0; }
+.panel > h2, .panel-head h2 { margin: 0 0 12px; font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; letter-spacing: 0.03em; text-wrap: balance; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.panel-head h2 { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 0.82rem; }
+.hint { color: var(--ink-2); font-size: 0.8rem; margin: 12px 0 0; }
+.empty { color: var(--ink-2); margin: 0; }
+.banner { margin: 0; border-radius: var(--radius); padding: 12px 14px; font-size: 0.88rem; background: var(--warn-bg); color: var(--warn-ink); }
+.banner.info { background: var(--accent-soft); color: var(--ink); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--rule); line-height: 1.6; }
+.chip.good { background: var(--good-bg); color: var(--good-ink); border-color: transparent; }
+.chip.warn { background: var(--warn-bg); color: var(--warn-ink); border-color: transparent; }
+.chip.crit { background: var(--crit-bg); color: var(--crit-ink); border-color: transparent; }
+.btn { appearance: none; border: 1px solid transparent; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 700; font-size: 0.95rem; padding: 10px 18px; min-height: 44px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-align: center; }
+.btn:hover { filter: brightness(1.07); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.ghost { background: var(--surface); color: var(--accent); border-color: var(--rule); }
+.btn.danger { background: var(--crit-bg); color: var(--crit-ink); }
+.btn.small { min-height: 36px; padding: 6px 12px; font-size: 0.85rem; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.chip-btn { appearance: none; border: 1px solid var(--rule); background: var(--surface-2); color: var(--ink); font: inherit; font-weight: 700; font-size: 0.85rem; border-radius: 999px; padding: 6px 14px; min-height: 36px; cursor: pointer; }
+.chip-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.icon-btn { appearance: none; border: 0; background: none; color: var(--muted); font: inherit; font-size: 1.1rem; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; }
+.icon-btn:hover { background: var(--surface-2); color: var(--crit-ink); }
+.icon-btn:focus-visible { outline: 2px solid var(--accent); }
+
+.form-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.form-grid .span { grid-column: 1 / -1; }
+.field { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.field > label, .field > .label, .label { font-size: 0.8rem; font-weight: 700; color: var(--ink-2); }
+input, select, textarea { font: inherit; font-size: 16px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 12px; min-height: 44px; width: 100%; min-width: 0; }
+input::placeholder { color: var(--muted); opacity: 1; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+input[type="date"] { -webkit-appearance: none; appearance: none; display: block; }
+input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+input[type="range"] { padding: 0; min-height: 36px; background: transparent; border: 0; accent-color: var(--accent); }
+input[type="checkbox"] { width: 20px; height: 20px; min-height: 0; accent-color: var(--accent); margin: 0; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--ink-2); cursor: pointer; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--surface-2); max-width: 100%; justify-self: start; }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.seg label { padding: 8px 14px; min-height: 42px; display: inline-flex; align-items: center; font-weight: 700; font-size: 0.9rem; color: var(--ink-2); cursor: pointer; border-left: 1px solid var(--rule); white-space: nowrap; }
+.seg label:first-of-type { border-left: 0; }
+.seg input:checked + label { background: var(--accent); color: var(--accent-ink); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: -3px; }
+.form-error { margin: 0; color: var(--crit-ink); background: var(--crit-bg); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* today */
+.exam-row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
+.exam-card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px 14px; display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; }
+.swatch { width: 10px; height: 10px; border-radius: 3px; margin-top: 6px; }
+.ec-name { font-size: 0.8rem; font-weight: 700; color: var(--ink-2); }
+.ec-main { font-size: 1.35rem; font-weight: 700; line-height: 1.3; }
+.ec-sub { font-size: 0.76rem; color: var(--muted); }
+.hero { display: grid; gap: 2px; padding: 4px 2px 0; }
+.eyebrow { margin: 0; font-size: 0.82rem; font-weight: 700; color: var(--ink-2); letter-spacing: 0.06em; }
+.figure { margin: 0; font-size: clamp(3rem, 12vw, 3.9rem); font-weight: 700; line-height: 1.12; letter-spacing: -0.01em; }
+.figure mark { background: linear-gradient(transparent 58%, var(--marker) 58%); color: inherit; padding: 0 0.06em; }
+.figure .unit { font-size: 0.42em; margin-left: 0.12em; }
+.hero .sub { margin: 6px 0 0; color: var(--ink-2); }
+.meter { position: relative; height: 12px; border-radius: 999px; background: var(--accent-soft); overflow: hidden; }
+.meter .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--accent); transition: width 0.4s ease; }
+.meter-foot { display: flex; justify-content: space-between; gap: 4px 10px; flex-wrap: wrap; font-size: 0.8rem; color: var(--ink-2); margin-top: 6px; }
+.quick { display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.quick .btn { min-height: 52px; padding-inline: 6px; font-size: 0.9rem; }
+.next-list { display: grid; gap: 0; }
+.next-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--grid); }
+.next-item:first-child { border-top: 0; padding-top: 0; }
+.ni-area { font-weight: 700; }
+.ni-why { font-size: 0.8rem; color: var(--muted); }
+.stat-row { display: flex; gap: 8px 18px; flex-wrap: wrap; align-items: baseline; }
+.stat-row b { font-size: 1.25rem; }
+.loglist { list-style: none; margin: 0; padding: 0; display: grid; }
+.logitem { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 4px 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--grid); }
+.logitem:first-child { border-top: 0; }
+.li-main { min-width: 0; }
+.li-area { font-weight: 700; overflow-wrap: anywhere; }
+.li-sub { font-size: 0.78rem; color: var(--muted); overflow-wrap: anywhere; }
+.li-min { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.day-head { font-family: var(--font-data); font-size: 0.82rem; color: var(--ink-2); font-weight: 700; padding: 12px 0 2px; display: flex; justify-content: space-between; }
+.day-head:first-child { padding-top: 0; }
+
+/* plan */
+.exam-plan { display: grid; gap: 12px; }
+.exam-plan h2 { display: flex; align-items: center; gap: 8px; }
+.calc { margin: 0; display: grid; }
+.calc > div { display: grid; grid-template-columns: minmax(7em, 11em) 1fr; gap: 8px; padding: 8px 0; border-top: 1px solid var(--grid); }
+.calc dt { color: var(--ink-2); font-size: 0.82rem; font-weight: 700; }
+.calc dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.split-out { font-weight: 700; font-size: 0.9rem; }
+
+/* weak map */
+.table-scroll { overflow-x: auto; }
+.ledger { width: 100%; border-collapse: collapse; font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+.ledger th { font-size: 0.72rem; font-weight: 700; color: var(--muted); letter-spacing: 0.04em; text-align: left; padding: 6px 8px; border-bottom: 1.5px solid var(--axis); white-space: nowrap; }
+.ledger td { padding: 8px; border-bottom: 1px solid var(--grid); vertical-align: middle; }
+.ledger .num { text-align: right; white-space: nowrap; font-family: var(--font-data); }
+.ledger td.area { min-width: 8em; }
+.wk-name { font-weight: 700; line-height: 1.45; }
+.wk-meta { display: flex; gap: 4px 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.accbar { display: block; height: 6px; border-radius: 999px; background: var(--accent-soft); margin-top: 4px; position: relative; min-width: 60px; }
+.accbar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--accent); }
+.accbar b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); border-radius: 1px; }
+
+/* charts */
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; max-width: 100%; height: auto; overflow: visible; }
+.chart-empty { margin: 0; min-height: 140px; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--rule); border-radius: 10px; text-align: center; padding: 16px; }
+.ax text { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.hit { fill: transparent; }
+.band { outline: none; }
+.band .seg-bar { transition: opacity 0.12s; }
+.band:hover .seg-bar, .band:focus .seg-bar { opacity: 0.72; }
+.band:focus-visible .hit { stroke: var(--accent); stroke-width: 2; }
+.tooltip { position: absolute; z-index: 3; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 10px; box-shadow: var(--shadow); padding: 8px 10px; font-size: 0.8rem; min-width: 140px; }
+.tt-date { color: var(--ink-2); font-size: 0.75rem; margin-bottom: 4px; font-weight: 700; }
+.tt-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tt-row b { font-variant-numeric: tabular-nums; }
+.tt-name { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.key-line { display: inline-block; width: 14px; height: 2px; border-radius: 1px; }
+.key-rect { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+.legend { display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: 0.82rem; color: var(--ink-2); margin: -2px 0 10px; }
+.lg { display: inline-flex; align-items: center; gap: 6px; }
+details { border-top: 1px solid var(--grid); margin-top: 8px; }
+summary { cursor: pointer; padding: 10px 0; font-weight: 700; color: var(--accent); font-size: 0.88rem; list-style: none; display: flex; align-items: center; gap: 8px; }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform 0.15s; }
+details[open] > summary::before { transform: rotate(45deg); }
+
+dialog { border: 1px solid var(--rule); border-radius: 16px; background: var(--surface); color: var(--ink); padding: 0; width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; }
+dialog::backdrop { background: var(--overlay); }
+.dlg { padding: 20px; display: grid; gap: 14px; margin: 0; }
+.dlg h2 { margin: 0; font-family: var(--font-display); font-size: 1.15rem; }
+.dlg p { margin: 0; }
+.dlg-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.dlg-actions .spacer { flex: 1; }
+#toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px); opacity: 0; background: var(--ink); color: var(--surface); padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 0.9rem; transition: opacity 0.2s, transform 0.2s; z-index: 20; pointer-events: none; max-width: calc(100vw - 32px); text-align: center; }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 480px) {
+  .calc > div { grid-template-columns: 1fr; gap: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+
+<header class="top">
+  <div class="wrap top-row">
+    <div class="brand"><h1>合格ノート</h1><small>FP2級・簿記2級</small></div>
+    <span id="sync" class="chip" role="status">読み込み中</span>
+  </div>
+  <div class="wrap">
+    <nav class="tabs" role="tablist" aria-label="画面の切り替え">
+      <button type="button" class="tab" role="tab" id="tab-today" data-tab="today" aria-controls="view-today" aria-selected="true">今日</button>
+      <button type="button" class="tab" role="tab" id="tab-plan" data-tab="plan" aria-controls="view-plan" aria-selected="false" tabindex="-1">計画</button>
+      <button type="button" class="tab" role="tab" id="tab-log" data-tab="log" aria-controls="view-log" aria-selected="false" tabindex="-1">記録</button>
+      <button type="button" class="tab" role="tab" id="tab-weak" data-tab="weak" aria-controls="view-weak" aria-selected="false" tabindex="-1">弱点</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p id="banner" class="banner" hidden></p>
+
+  <section class="view" id="view-today" role="tabpanel" aria-labelledby="tab-today">
+    <div class="exam-row" id="td-exams"></div>
+    <div class="hero" id="td-hero"><p class="eyebrow">今日の目標</p><p class="figure">—</p></div>
+    <div class="panel">
+      <div class="meter" id="td-meter" role="img" aria-label="今日の進み具合"><span class="fill" style="width:0%"></span></div>
+      <div class="meter-foot" id="td-meter-foot"></div>
+    </div>
+    <div class="quick">
+      <button type="button" class="btn" data-quick="commute">通勤で記録</button>
+      <button type="button" class="btn ghost" data-quick="lunch">昼休みで記録</button>
+      <button type="button" class="btn ghost" data-quick="home">家で記録</button>
+    </div>
+    <div class="panel"><h2>次にやる分野</h2><div class="next-list" id="td-next"></div><p class="hint">正答率が合格ラインより低い分野、まだ手をつけていない分野の順に出します。</p></div>
+    <div class="grid-2">
+      <div class="panel"><h2>今週</h2><div id="td-week"></div></div>
+      <div class="panel"><h2>今日の記録</h2><ul class="loglist" id="td-logs"></ul></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
+    <div class="panel exam-plan" data-exam="fp2">
+      <h2><span class="swatch" style="background:var(--series-1)"></span>FP2級</h2>
+      <div class="form-grid">
+        <div class="field"><label for="pl-date-fp2">試験日</label><input id="pl-date-fp2" type="date"></div>
+        <div class="field"><label for="pl-hours-fp2">目標の学習時間（時間）</label><input id="pl-hours-fp2" inputmode="numeric" autocomplete="off" placeholder="未設定"></div>
+        <div class="field span"><label class="check"><input type="checkbox" id="pl-tent-fp2">日付はまだ仮（受験日を決めたら外す）</label></div>
+        <div class="field span"><span class="label" id="pl-status-fp2-label">状況</span>
+          <div class="seg" role="radiogroup" aria-labelledby="pl-status-fp2-label">
+            <input type="radio" name="pl-status-fp2" id="pl-status-fp2-study" value="study"><label for="pl-status-fp2-study">勉強中</label>
+            <input type="radio" name="pl-status-fp2" id="pl-status-fp2-booked" value="booked"><label for="pl-status-fp2-booked">申込済み</label>
+            <input type="radio" name="pl-status-fp2" id="pl-status-fp2-passed" value="passed"><label for="pl-status-fp2-passed">合格</label>
+          </div>
+        </div>
+      </div>
+      <div class="actions"><button type="button" class="btn small" data-save-exam="fp2">保存</button></div>
+      <dl class="calc" id="pl-calc-fp2"></dl>
+      <p class="hint">合格ライン：学科 60点満点中36点、実技（日本FP協会）100点満点中60点。どちらも6割。CBTで随時受検。</p>
+    </div>
+    <div class="panel exam-plan" data-exam="boki2">
+      <h2><span class="swatch" style="background:var(--series-2)"></span>簿記2級</h2>
+      <div class="form-grid">
+        <div class="field"><label for="pl-date-boki2">試験日</label><input id="pl-date-boki2" type="date"></div>
+        <div class="field"><label for="pl-hours-boki2">目標の学習時間（時間）</label><input id="pl-hours-boki2" inputmode="numeric" autocomplete="off" placeholder="未設定"></div>
+        <div class="field span"><label class="check"><input type="checkbox" id="pl-tent-boki2">日付はまだ仮（受験日を決めたら外す）</label></div>
+        <div class="field span"><span class="label" id="pl-status-boki2-label">状況</span>
+          <div class="seg" role="radiogroup" aria-labelledby="pl-status-boki2-label">
+            <input type="radio" name="pl-status-boki2" id="pl-status-boki2-study" value="study"><label for="pl-status-boki2-study">勉強中</label>
+            <input type="radio" name="pl-status-boki2" id="pl-status-boki2-booked" value="booked"><label for="pl-status-boki2-booked">申込済み</label>
+            <input type="radio" name="pl-status-boki2" id="pl-status-boki2-passed" value="passed"><label for="pl-status-boki2-passed">合格</label>
+          </div>
+        </div>
+      </div>
+      <div class="actions"><button type="button" class="btn small" data-save-exam="boki2">保存</button></div>
+      <dl class="calc" id="pl-calc-boki2"></dl>
+      <p class="hint">合格ライン：100点満点中70点（商業簿記60点・工業簿記40点、90分）。統一試験は6月・11月・2月、ネット試験は随時。</p>
+    </div>
+    <div class="panel">
+      <h2>使える時間</h2>
+      <div class="form-grid">
+        <div class="field"><label for="pl-commute">平日：通勤（往復の乗車中・分）</label><input id="pl-commute" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pl-lunch">平日：昼休み（分）</label><input id="pl-lunch" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pl-evening">平日：帰宅後（分）</label><input id="pl-evening" inputmode="numeric" autocomplete="off"></div>
+        <div class="field"><label for="pl-holiday">土日（1日あたり・分）</label><input id="pl-holiday" inputmode="numeric" autocomplete="off"></div>
+        <div class="field span"><label for="pl-split">2つの試験の時間配分</label><input id="pl-split" type="range" min="10" max="90" step="5"><span class="split-out" id="pl-split-out"></span></div>
+      </div>
+      <div class="actions"><button type="button" class="btn small" id="pl-save-budget">保存</button></div>
+      <p class="hint">祝日は平日として数えます。片方の試験が終わったら、残りの時間はもう片方に回して計算します。目標の学習時間に公的な目安はないので、まず仮の数字を入れ、実績を見て直してください。</p>
+    </div>
+  </section>
+
+  <section class="view" id="view-log" role="tabpanel" aria-labelledby="tab-log" hidden>
+    <div class="actions"><button type="button" class="btn" id="lg-add">＋ 勉強を記録</button></div>
+    <div class="panel">
+      <h2>直近4週間の学習時間</h2>
+      <div class="legend"><span class="lg"><span class="key-rect" style="background:var(--series-1)"></span>FP2級</span><span class="lg"><span class="key-rect" style="background:var(--series-2)"></span>簿記2級</span></div>
+      <div class="chart" id="lg-chart"></div>
+      <details><summary>表で見る</summary><div class="table-scroll" id="lg-table"></div></details>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>記録</h2><button type="button" class="btn small ghost" id="lg-export">CSVで保存</button></div>
+      <div id="lg-list"></div>
+      <div id="exp-fallback" hidden>
+        <p class="hint">この環境ではファイルを保存できないため、内容を表示しています。</p>
+        <label for="exp-text" class="sr">CSVの内容</label>
+        <textarea id="exp-text" rows="6" readonly></textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="view-weak" role="tabpanel" aria-labelledby="tab-weak" hidden>
+    <div class="panel"><h2><span class="swatch" style="background:var(--series-1);display:inline-block;margin:0 8px 0 0"></span>FP2級</h2><div class="table-scroll" id="wk-fp2"></div></div>
+    <div class="panel"><h2><span class="swatch" style="background:var(--series-2);display:inline-block;margin:0 8px 0 0"></span>簿記2級</h2><div class="table-scroll" id="wk-boki2"></div></div>
+    <p class="hint">正答率は、記録した「解いた問題数・正解数」の直近30問から計算します。バーの黒い線が合格ライン（FP2：6割、簿記2級：7割）です。</p>
+  </section>
+</main>
+
+<dialog id="log-dialog" aria-labelledby="ld-title">
+  <form id="log-form" class="dlg" novalidate>
+    <h2 id="ld-title">勉強を記録</h2>
+    <div class="form-grid">
+      <div class="field span"><span class="label" id="ld-exam-label">試験</span>
+        <div class="seg" role="radiogroup" aria-labelledby="ld-exam-label">
+          <input type="radio" name="ld-exam" id="ld-exam-fp2" value="fp2" checked><label for="ld-exam-fp2">FP2級</label>
+          <input type="radio" name="ld-exam" id="ld-exam-boki2" value="boki2"><label for="ld-exam-boki2">簿記2級</label>
+        </div>
+      </div>
+      <div class="field span"><label for="ld-area">分野</label><select id="ld-area"></select></div>
+      <div class="field"><label for="ld-date">日付</label><input id="ld-date" type="date"></div>
+      <div class="field"><label for="ld-min">時間（分）</label><input id="ld-min" inputmode="numeric" autocomplete="off" placeholder="例：30"></div>
+      <div class="presets span"><button type="button" class="chip-btn" data-min="15">15分</button><button type="button" class="chip-btn" data-min="30">30分</button><button type="button" class="chip-btn" data-min="45">45分</button><button type="button" class="chip-btn" data-min="60">60分</button></div>
+      <div class="field span"><span class="label" id="ld-place-label">場所</span>
+        <div class="seg" role="radiogroup" aria-labelledby="ld-place-label">
+          <input type="radio" name="ld-place" id="ld-place-commute" value="commute" checked><label for="ld-place-commute">通勤</label>
+          <input type="radio" name="ld-place" id="ld-place-lunch" value="lunch"><label for="ld-place-lunch">昼休み</label>
+          <input type="radio" name="ld-place" id="ld-place-home" value="home"><label for="ld-place-home">家</label>
+          <input type="radio" name="ld-place" id="ld-place-other" value="other"><label for="ld-place-other">その他</label>
+        </div>
+      </div>
+      <div class="field span"><label for="ld-kind">内容</label><select id="ld-kind"><option value="read">テキストを読んだ</option><option value="practice">問題演習</option><option value="past">過去問</option><option value="recall">思い出して書く練習</option><option value="audio">音声で暗記</option></select></div>
+      <div class="field"><label for="ld-q">解いた問題数（任意）</label><input id="ld-q" inputmode="numeric" autocomplete="off" placeholder="例：20"></div>
+      <div class="field"><label for="ld-c">そのうち正解（任意）</label><input id="ld-c" inputmode="numeric" autocomplete="off" placeholder="例：14"></div>
+      <div class="field span"><label for="ld-note">メモ</label><input id="ld-note" autocomplete="off" maxlength="200" placeholder="任意（間違えた論点など）"></div>
+    </div>
+    <p class="form-error" id="ld-error" hidden></p>
+    <div class="dlg-actions"><span class="spacer"></span><button type="button" class="btn ghost" id="ld-cancel">キャンセル</button><button type="submit" class="btn">記録する</button></div>
+  </form>
+</dialog>
+
+<dialog id="confirm-dialog" aria-labelledby="cf-title">
+  <div class="dlg">
+    <h2 id="cf-title">確認</h2>
+    <p id="cf-msg"></p>
+    <div class="dlg-actions"><span class="spacer"></span><button type="button" class="btn ghost" id="cf-cancel">やめる</button><button type="button" class="btn danger" id="cf-ok">削除する</button></div>
+  </div>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ===================== helpers ===================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const num = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+  const has = (v) => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
+  const pad = (n) => String(n).padStart(2, '0');
+  const f1 = (n) => n.toFixed(1);
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  const WD = '日月火水木金土';
+  const toHalf = (s) => String(s).replace(/[０-９．]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+  const pct0 = (r) => Math.round(r * 100) + '%';
+  function parseIntSafe(v) { const s = toHalf(String(v ?? '').trim()).replace(/[,，分\s]/g, ''); if (!/^\d+$/.test(s)) return NaN; return Number(s); }
+  function parseHours(v) { const s = toHalf(String(v ?? '').trim()).replace(/[,，時間h\s]/g, ''); if (s === '') return null; if (!/^\d+(\.\d+)?$/.test(s)) return NaN; return Number(s); }
+  function fmtMin(m) { m = Math.round(m); if (m < 60) return `${m}分`; const h = Math.floor(m / 60), r = m % 60; return r ? `${h}時間${r}分` : `${h}時間`; }
+  const fmtHours = (m) => `${Math.round(m / 60)}時間`;
+
+  function todayStr() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+  function parseD(s) { const [y, m, d] = String(s).split('-').map(Number); return Date.UTC(y, m - 1, d); }
+  function fmtD(t) { const d = new Date(t); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; }
+  function daysBetween(a, b) { return Math.round((parseD(b) - parseD(a)) / 86400000); }
+  function addDays(s, n) { return fmtD(parseD(s) + n * 86400000); }
+  const weekday = (s) => new Date(parseD(s)).getUTCDay();
+  const md = (s) => { const [, m, d] = s.split('-').map(Number); return `${m}/${d}`; };
+  const mdw = (s) => `${md(s)}（${WD[weekday(s)]}）`;
+  const jpDate = (s) => { const [y, m, d] = s.split('-').map(Number); return `${y}年${m}月${d}日`; };
+
+  /* ===================== exam definitions ===================== */
+  const EXAMS = {
+    fp2: { name: 'FP2級', short: 'FP2', pass: 0.6, color: 'var(--series-1)', areas: [
+      { id: 'life', name: 'ライフプランニングと資金計画' },
+      { id: 'risk', name: 'リスク管理' },
+      { id: 'fin', name: '金融資産運用' },
+      { id: 'tax', name: 'タックスプランニング' },
+      { id: 'estate', name: '不動産' },
+      { id: 'inherit', name: '相続・事業承継' },
+      { id: 'jitsugi', name: '実技（資産設計提案業務）' },
+    ] },
+    boki2: { name: '簿記2級', short: '簿記', pass: 0.7, color: 'var(--series-2)', areas: [
+      { id: 'shiwake', name: '商業：仕訳' },
+      { id: 'renketsu', name: '商業：連結会計' },
+      { id: 'kessan', name: '商業：決算・財務諸表' },
+      { id: 'kobetsu', name: '商業：個別論点（有価証券・固定資産・税効果など）' },
+      { id: 'kohi', name: '工業：費目別・個別原価計算' },
+      { id: 'sogo', name: '工業：部門別・総合原価計算' },
+      { id: 'hyojun', name: '工業：標準原価計算' },
+      { id: 'cvp', name: '工業：直接原価計算・CVP分析' },
+    ] },
+  };
+  const KEYS = ['fp2', 'boki2'];
+  const PLACES = { commute: '通勤', lunch: '昼休み', home: '家', other: 'その他' };
+  const KINDS = { read: 'テキスト', practice: '問題演習', past: '過去問', recall: '思い出して書く', audio: '音声', drill: 'ドリル' };
+  const areaName = (exam, id) => ((EXAMS[exam] || { areas: [] }).areas.find((a) => a.id === id) || { name: id || '—' }).name;
+
+  /* ===================== storage ===================== */
+  class LocalStore {
+    constructor(ns) { this.ns = ns; this.mode = 'local'; this.listeners = new Map(); }
+    readCol(col) { try { const v = JSON.parse(localStorage.getItem(this.ns + col) || '{}'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } }
+    writeCol(col, map) { try { localStorage.setItem(this.ns + col, JSON.stringify(map)); } catch (e) { throw { code: 'local_write' }; } (this.listeners.get(col) || new Set()).forEach((fn) => fn()); }
+    on(col, fn) { if (!this.listeners.has(col)) this.listeners.set(col, new Set()); this.listeners.get(col).add(fn); return () => this.listeners.get(col).delete(fn); }
+    subscribe(col, cb) { const fire = () => { const m = this.readCol(col); cb(Object.entries(m).map(([id, v]) => ({ ...v, id })), { fromCache: false }); }; setTimeout(fire, 0); return this.on(col, fire); }
+    subscribeDoc(path, cb) { const [col, id] = path.split('/'); const fire = () => cb(this.readCol(col)[id] ?? null, { fromCache: false }); setTimeout(fire, 0); return this.on(col, fire); }
+    async add(col, data) { const m = this.readCol(col); const id = uid(); m[id] = data; this.writeCol(col, m); return id; }
+    async set(path, data) { const [col, id] = path.split('/'); const m = this.readCol(col); m[id] = data; this.writeCol(col, m); }
+    async remove(path) { const [col, id] = path.split('/'); const m = this.readCol(col); delete m[id]; this.writeCol(col, m); }
+  }
+  async function retry(fn) {
+    try { return await fn(); } catch (e) {
+      if (e && e.code === 'unavailable') { await new Promise((r) => setTimeout(r, 400 + Math.random() * 600)); return fn(); }
+      throw e;
+    }
+  }
+  class CloudStore {
+    constructor(db) { this.db = db; this.mode = 'cloud'; }
+    subscribe(col, cb, err) { return this.db.collection(col).onSnapshot((s) => cb(s.docs.map((d) => ({ ...d.data(), id: d.id })), s.metadata), err); }
+    subscribeDoc(path, cb, err) { return this.db.doc(path).onSnapshot((s) => cb(s.exists ? { ...s.data() } : null, s.metadata), err); }
+    async add(col, data) { const ref = this.db.collection(col).doc(); await retry(() => ref.set(data)); return ref.id; }
+    async set(path, data) { await retry(() => this.db.doc(path).set(data)); }
+    async remove(path) { await retry(() => this.db.doc(path).delete()); }
+  }
+
+  /* ===================== state & planning ===================== */
+  const S = { exams: {}, logs: [], plan: null, loaded: { exams: false, logs: false, plan: false }, mode: 'loading', synced: false, stale: false, readOnly: false, subError: '' };
+  let STORE = null, DOWNLOADS = null, D = null;
+  const VIEWS = ['today', 'plan', 'log', 'weak'];
+  const ui = { view: 'today' };
+
+  function examList() {
+    return KEYS.map((k) => {
+      const d = S.exams[k] || {};
+      return { key: k, def: EXAMS[k], name: EXAMS[k].name, date: d.date || null, tentative: !!d.tentative, targetHours: has(d.targetHours) ? num(d.targetHours) : null, status: d.status || 'study' };
+    });
+  }
+  function planOf() {
+    const p = S.plan || {};
+    const g = (k, dflt) => (has(p[k]) ? num(p[k]) : dflt);
+    const fp = p.split && has(p.split.fp2) ? num(p.split.fp2) : 50;
+    return { commute: g('commute', 60), lunch: g('lunch', 0), evening: g('evening', 30), holiday: g('holiday', 120), split: { fp2: fp, boki2: 100 - fp } };
+  }
+  const isHoliday = (d) => { const w = weekday(d); return w === 0 || w === 6; };
+  const capDay = (d, P) => (isHoliday(d) ? P.holiday : P.commute + P.lunch + P.evening);
+  const activeOn = (d, ex) => ex.filter((e) => e.status !== 'passed' && e.date && d <= e.date);
+  function capShare(d, e, ex, P) {
+    const act = activeOn(d, ex);
+    if (!act.some((a) => a.key === e.key)) return 0;
+    const ws = act.reduce((s, a) => s + Math.max(1, P.split[a.key]), 0);
+    return (capDay(d, P) * Math.max(1, P.split[e.key])) / ws;
+  }
+  function capBetween(from, to, e, ex, P) { let s = 0; if (!e.date) return 0; const end = to < e.date ? to : e.date; for (let d = from; d <= end; d = addDays(d, 1)) s += capShare(d, e, ex, P); return s; }
+  const minutesFor = (key, pred) => S.logs.reduce((s, l) => (l.exam === key && pred(l) ? s + num(l.minutes) : s), 0);
+
+  // Spread the remaining target over the remaining capacity, in proportion to each day's capacity.
+  function examStats(e, ex, P, today) {
+    const done = minutesFor(e.key, () => true);
+    const target = e.targetHours !== null ? e.targetHours * 60 : null;
+    const remainingNow = target !== null ? Math.max(0, target - done) : null;
+    const active = e.status !== 'passed' && !!e.date && today <= e.date;
+    const capLeft = active ? capBetween(today, e.date, e, ex, P) : 0;
+    const shareOf = (from, day) => {
+      if (!active) return 0;
+      const capD = capShare(day, e, ex, P);
+      if (target === null) return capD;
+      const rem = Math.max(0, target - minutesFor(e.key, (l) => l.date < from));
+      const tot = capBetween(from, e.date, e, ex, P);
+      return tot > 0 ? (rem * capD) / tot : 0;
+    };
+    const todayTarget = shareOf(today, today);
+    const mon = addDays(today, -((weekday(today) + 6) % 7));
+    let weekTarget = 0;
+    for (let i = 0; i < 7; i++) { const d = addDays(mon, i); if (d >= mon && (!e.date || d <= e.date)) weekTarget += active || d < today ? shareOf(mon, d) : 0; }
+    const days = e.date ? daysBetween(today, e.date) : null;
+    const ratio = remainingNow !== null && capLeft > 0 ? remainingNow / capLeft : null;
+    const perDay = remainingNow !== null && days !== null && days >= 0 ? remainingNow / (days + 1) : null;
+    return { done, target, remainingNow, capLeft, todayTarget, weekTarget, days, ratio, perDay, active };
+  }
+
+  function areaStats(key) {
+    const def = EXAMS[key];
+    return def.areas.map((a) => {
+      const logs = S.logs.filter((l) => l.exam === key && l.area === a.id).sort((x, y) => y.date.localeCompare(x.date) || num(y.createdAt) - num(x.createdAt));
+      const minutes = logs.reduce((s, l) => s + num(l.minutes), 0);
+      let q = 0, c = 0;
+      for (const l of logs) { if (q >= 30) break; if (has(l.questions) && num(l.questions) > 0) { q += num(l.questions); c += Math.min(num(l.correct), num(l.questions)); } }
+      const acc = q > 0 ? c / q : null;
+      let status = 'untouched';
+      if (acc !== null) status = acc < def.pass ? 'weak' : acc < def.pass + 0.15 ? 'almost' : 'strong';
+      else if (minutes > 0) status = 'nodata';
+      return { ...a, minutes, q, c, acc, last: logs.length ? logs[0].date : null, status };
+    });
+  }
+  function recommend(key) {
+    const st = areaStats(key), pass = EXAMS[key].pass;
+    const weak = st.filter((s) => s.status === 'weak').sort((a, b) => a.acc - b.acc);
+    if (weak.length) return { area: weak[0], why: `正答率${pct0(weak[0].acc)}。合格ライン${pct0(pass)}に届いていません` };
+    const un = st.filter((s) => s.status === 'untouched');
+    if (un.length) return { area: un[0], why: 'まだ記録がない分野です' };
+    const al = st.filter((s) => s.status === 'almost').sort((a, b) => a.acc - b.acc);
+    if (al.length) return { area: al[0], why: `正答率${pct0(al[0].acc)}。合格ラインまでの余裕が小さい分野です` };
+    const nd = st.filter((s) => s.status === 'nodata').sort((a, b) => a.minutes - b.minutes);
+    if (nd.length) return { area: nd[0], why: '問題演習の記録がまだない分野です' };
+    const least = [...st].sort((a, b) => a.minutes - b.minutes)[0];
+    return { area: least, why: '学習時間がいちばん少ない分野です' };
+  }
+  function streak(today) {
+    const days = new Set(S.logs.map((l) => l.date));
+    let d = days.has(today) ? today : addDays(today, -1), n = 0;
+    while (days.has(d)) { n += 1; d = addDays(d, -1); }
+    return n;
+  }
+
+  window.StudyEngine = { examStats, areaStats, recommend, capDay, planOf, examList, S };
+
+  function derive() {
+    const today = todayStr(), ex = examList(), P = planOf();
+    const stats = {};
+    for (const e of ex) stats[e.key] = examStats(e, ex, P, today);
+    return { today, ex, P, stats };
+  }
+  let pending = false;
+  function schedule() { if (pending) return; pending = true; setTimeout(() => { pending = false; renderAll(); }, 0); }
+
+  /* ===================== shared UI ===================== */
+  let toastT = 0;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+  function showErr(prefix, msg) { const el = $('#' + prefix + '-error'); el.textContent = msg; el.hidden = false; }
+  function hideErr(prefix) { const el = $('#' + prefix + '-error'); if (el) el.hidden = true; }
+  const radioVal = (name) => (document.querySelector(`input[name="${name}"]:checked`) || {}).value;
+  function setRadio(name, value) { const el = document.querySelector(`input[name="${name}"][value="${value}"]`); if (el) el.checked = true; }
+  function confirmBox(message, okLabel = '削除する', danger = true) {
+    return new Promise((resolve) => {
+      const dlg = $('#confirm-dialog'), ok = $('#cf-ok'), cancel = $('#cf-cancel');
+      $('#cf-msg').textContent = message; ok.textContent = okLabel; ok.className = danger ? 'btn danger' : 'btn';
+      let settled = false;
+      const finish = (v) => { if (settled) return; settled = true; ok.removeEventListener('click', onOk); cancel.removeEventListener('click', onNo); dlg.removeEventListener('cancel', onEsc); if (dlg.open) dlg.close(); resolve(v); };
+      const onOk = () => finish(true), onNo = () => finish(false), onEsc = (e) => { e.preventDefault(); finish(false); };
+      ok.addEventListener('click', onOk); cancel.addEventListener('click', onNo); dlg.addEventListener('cancel', onEsc);
+      dlg.showModal();
+    });
+  }
+  async function write(fn, okMsg) {
+    if (!STORE) { toast('まだ読み込み中です'); return false; }
+    if (S.readOnly) { toast('このページでは記録できません'); return false; }
+    try { await fn(); if (okMsg) toast(okMsg); return true; } catch (e) {
+      const code = e && e.code;
+      if (code === 'invalid_argument' || code === 'revoked' || code === 'not_granted' || code === 'capability_disabled' || code === 'capability_removed') { S.readOnly = true; renderSync(); toast('保存できませんでした。このページは閲覧のみの状態です'); }
+      else if (code === 'quota_exceeded') toast('保存容量の上限です。古い記録を削除してください');
+      else if (code === 'resource_exhausted') toast('操作が続いたため保存を止めました。少し待ってから試してください');
+      else if (code === 'local_write') toast('この端末に保存できませんでした');
+      else toast('保存できませんでした。通信状況を確認して、もう一度試してください');
+      return false;
+    }
+  }
+  function niceMinStep(max) { for (const s of [15, 30, 60, 90, 120, 180, 240]) if (max / s <= 4) return s; return 300; }
+
+  /* ===================== render ===================== */
+  function renderAll() {
+    D = derive();
+    renderSync();
+    renderToday();
+    renderPlan();
+    renderLog();
+    renderWeak();
+  }
+
+  function renderSync() {
+    const el = $('#sync'), banner = $('#banner');
+    let text = '読み込み中', cls = 'chip', msg = '', bcls = 'banner';
+    if (S.readOnly) { text = '閲覧のみ'; cls += ' warn'; msg = 'このページでは記録や変更ができません。所有者のアカウントで開いてください。'; }
+    else if (S.subError) { text = '接続エラー'; cls += ' crit'; msg = S.subError; }
+    else if (S.mode === 'cloud') { if (S.synced) { text = '✓ クラウド保存'; cls += ' good'; } else if (S.stale) { text = '接続待ち'; cls += ' warn'; msg = '保存先にまだ接続できていません。表示は古い可能性があります。'; } }
+    else if (S.mode === 'local-file') { text = 'この端末に保存'; msg = 'claude.ai の外で開いているため、記録はこのブラウザの中だけに保存されます。'; bcls += ' info'; }
+    else if (S.mode === 'local-fallback') { text = '端末のみ'; cls += ' warn'; msg = 'クラウドの保存機能に接続できなかったため、この端末だけに保存しています。claude.ai にサインインした状態で開き直してください。'; }
+    el.className = cls; el.textContent = text;
+    banner.className = bcls; banner.textContent = msg; banner.hidden = !msg;
+  }
+
+  function renderToday() {
+    const { ex, stats, today } = D;
+    $('#td-exams').innerHTML = ex.map((e) => {
+      const s = stats[e.key];
+      let main, sub;
+      if (e.status === 'passed') { main = '合格'; sub = 'おつかれさまでした'; }
+      else if (!e.date) { main = '試験日未設定'; sub = '「計画」で入れてください'; }
+      else if (s.days < 0) { main = '試験日を過ぎました'; sub = '結果か日付を「計画」で更新'; }
+      else { main = s.days === 0 ? '今日が試験日' : `あと${s.days}日`; sub = `${jpDate(e.date)}${e.tentative ? '（仮）' : ''}${e.status === 'booked' ? '・申込済み' : ''}`; }
+      return `<div class="exam-card"><span class="swatch" style="background:${e.def.color}"></span><div><div class="ec-name">${esc(e.name)}</div><div class="ec-main">${esc(main)}</div><div class="ec-sub">${esc(sub)}</div></div></div>`;
+    }).join('');
+    if (!S.loaded.exams || !S.loaded.logs) return;
+    const active = ex.filter((e) => stats[e.key].active);
+    const total = Math.ceil(active.reduce((s, e) => s + stats[e.key].todayTarget, 0) / 5) * 5;
+    const doneToday = S.logs.filter((l) => l.date === today).reduce((s, l) => s + num(l.minutes), 0);
+    const hero = $('#td-hero');
+    if (!active.length) {
+      hero.innerHTML = '<p class="eyebrow">今日の目標</p><p class="figure">—</p><p class="sub">「計画」で試験日を入れると、今日やる時間が出ます。</p>';
+    } else {
+      const parts = active.map((e) => `${e.def.short} ${Math.ceil(stats[e.key].todayTarget / 5) * 5}分`).join('・');
+      const left = Math.max(0, total - doneToday);
+      hero.innerHTML = `<p class="eyebrow">今日の目標（${esc(mdw(today))}）</p><p class="figure"><mark>${total}<span class="unit">分</span></mark></p><p class="sub">${esc(parts)}。${doneToday > 0 ? `済み ${esc(fmtMin(doneToday))}${left > 0 ? `、あと ${esc(fmtMin(left))}` : '。今日の分は達成'}` : 'まだ記録がありません'}。</p>`;
+    }
+    const ratio = total > 0 ? Math.min(1, doneToday / total) : 0;
+    $('#td-meter').querySelector('.fill').style.width = (ratio * 100).toFixed(1) + '%';
+    $('#td-meter').setAttribute('aria-label', `今日の進み具合：目標${total}分のうち${doneToday}分`);
+    $('#td-meter-foot').innerHTML = `<span>済み ${esc(fmtMin(doneToday))} / 目標 ${total}分</span><span>${isHoliday(today) ? '土日の計画' : '平日の計画'}で計算</span>`;
+    $('#td-next').innerHTML = (active.length ? active : ex).map((e) => {
+      const r = recommend(e.key);
+      return `<div class="next-item"><span class="swatch" style="background:${e.def.color}"></span><div><div class="ni-area">${esc(e.def.short)}：${esc(r.area.name)}</div><div class="ni-why">${esc(r.why)}</div></div><button type="button" class="btn small ghost" data-start="${e.key}:${esc(r.area.id)}">記録</button></div>`;
+    }).join('');
+    const mon = addDays(today, -((weekday(today) + 6) % 7)), sun = addDays(mon, 6);
+    const weekDone = S.logs.filter((l) => l.date >= mon && l.date <= sun).reduce((s, l) => s + num(l.minutes), 0);
+    const weekTarget = Math.round(active.reduce((s, e) => s + stats[e.key].weekTarget, 0));
+    const wr = weekTarget > 0 ? Math.min(1, weekDone / weekTarget) : 0;
+    $('#td-week').innerHTML = `<div class="stat-row"><span><b>${esc(fmtMin(weekDone))}</b> / ${esc(fmtMin(weekTarget))}</span><span class="chip ${streak(today) > 0 ? 'good' : ''}">連続 ${streak(today)}日</span></div>
+      <div class="meter" role="img" aria-label="今週の進み具合：${weekDone}分 / ${weekTarget}分" style="margin-top:10px"><span class="fill" style="width:${(wr * 100).toFixed(1)}%"></span></div>
+      <p class="hint">${esc(md(mon))}〜${esc(md(sun))}。${ex.map((e) => `${e.def.short} ${fmtMin(minutesFor(e.key, (l) => l.date >= mon && l.date <= sun))}`).join('・')}</p>`;
+    const todays = S.logs.filter((l) => l.date === today).sort((a, b) => num(b.createdAt) - num(a.createdAt));
+    $('#td-logs').innerHTML = todays.length ? todays.map(logItem).join('') : '<li class="empty">まだ記録がありません。上のボタンから記録できます。</li>';
+  }
+
+  function logItem(l) {
+    const def = EXAMS[l.exam] || { short: '', color: 'var(--muted)' };
+    const acc = has(l.questions) && num(l.questions) > 0 ? `・${num(l.correct)}/${num(l.questions)}問正解` : '';
+    return `<li class="logitem"><span class="swatch" style="background:${def.color}"></span><div class="li-main"><div class="li-area">${esc(def.short)}：${esc(areaName(l.exam, l.area))}</div><div class="li-sub">${esc(PLACES[l.place] || '')}・${esc(KINDS[l.kind] || '')}${esc(acc)}${l.note ? '・' + esc(l.note) : ''}</div></div><span class="li-min">${esc(fmtMin(num(l.minutes)))}</span><button type="button" class="icon-btn" data-del-log="${esc(l.id)}" aria-label="${esc(md(l.date))}の記録を削除">×</button></li>`;
+  }
+
+  const dirty = new Set();
+  function renderPlan() {
+    if (!S.loaded.exams || !S.loaded.plan) return;
+    const { ex, stats, P } = D;
+    for (const e of ex) {
+      if (!dirty.has(e.key)) {
+        $('#pl-date-' + e.key).value = e.date || '';
+        $('#pl-hours-' + e.key).value = e.targetHours !== null ? String(e.targetHours) : '';
+        $('#pl-tent-' + e.key).checked = e.tentative;
+        setRadio('pl-status-' + e.key, e.status);
+      }
+      const s = stats[e.key];
+      const rows = [];
+      rows.push(['これまでの学習', fmtMin(s.done)]);
+      if (e.status === 'passed') rows.push(['状況', '合格済み']);
+      else if (!e.date) rows.push(['試験日までに使える時間', '試験日を入れると計算します']);
+      else if (s.days < 0) rows.push(['試験日', '過ぎています。結果か日付を更新してください']);
+      else {
+        rows.push(['試験日までに使える時間', `約${fmtHours(s.capLeft)}（あと${s.days}日・今の計画のまま）`]);
+        if (s.target === null) rows.push(['判定', '目標の学習時間を入れると、時間が足りるかを判定します']);
+        else {
+          rows.push(['目標まで残り', fmtMin(s.remainingNow)]);
+          let chip;
+          if (s.remainingNow <= 0) chip = '<span class="chip good">✓ 目標時間に到達</span>';
+          else if (s.ratio === null) chip = '<span class="chip crit">▲ 使える時間がありません</span>';
+          else if (s.ratio <= 0.8) chip = `<span class="chip good">● 余裕あり（使える時間の${pct0(s.ratio)}）</span>`;
+          else if (s.ratio <= 1) chip = `<span class="chip warn">▲ ぎりぎり（使える時間の${pct0(s.ratio)}）</span>`;
+          else chip = `<span class="chip crit">▲ 約${esc(fmtHours(s.remainingNow - s.capLeft))}足りません</span>`;
+          rows.push(['判定', chip, true]);
+          if (s.perDay !== null && s.remainingNow > 0) rows.push(['必要なペース', `1日平均 ${Math.ceil(s.perDay)}分（土日も含めた平均）`]);
+        }
+      }
+      $('#pl-calc-' + e.key).innerHTML = rows.map(([k, v, raw]) => `<div><dt>${esc(k)}</dt><dd>${raw ? v : esc(v)}</dd></div>`).join('');
+    }
+    if (!dirty.has('budget')) {
+      $('#pl-commute').value = String(P.commute); $('#pl-lunch').value = String(P.lunch);
+      $('#pl-evening').value = String(P.evening); $('#pl-holiday').value = String(P.holiday);
+      $('#pl-split').value = String(P.split.fp2);
+    }
+    updateSplitOut();
+  }
+  function updateSplitOut() { const v = Number($('#pl-split').value) || 50; $('#pl-split-out').textContent = `FP2級 ${v}% ・ 簿記2級 ${100 - v}%`; }
+
+  function renderLog() {
+    if (!S.loaded.logs) return;
+    const byDate = new Map();
+    for (const l of [...S.logs].sort((a, b) => b.date.localeCompare(a.date) || num(b.createdAt) - num(a.createdAt)).slice(0, 300)) {
+      if (!byDate.has(l.date)) byDate.set(l.date, []);
+      byDate.get(l.date).push(l);
+    }
+    $('#lg-list').innerHTML = byDate.size ? [...byDate.entries()].map(([d, ls]) => `<div class="day-head"><span>${esc(mdw(d))}</span><span>${esc(fmtMin(ls.reduce((s, l) => s + num(l.minutes), 0)))}</span></div><ul class="loglist">${ls.map(logItem).join('')}</ul>`).join('')
+      : '<p class="empty">まだ記録がありません。「＋ 勉強を記録」から始めてください。</p>';
+    if (ui.view === 'log') renderLogChart();
+  }
+
+  let chartW = 0;
+  function renderLogChart() {
+    const host = $('#lg-chart'), tableBox = $('#lg-table');
+    const W = Math.round(host.clientWidth);
+    if (!W) return;
+    chartW = W;
+    const days = [];
+    for (let i = 27; i >= 0; i--) days.push(addDays(D.today, -i));
+    const by = new Map(days.map((d) => [d, { d, fp2: 0, boki2: 0 }]));
+    for (const l of S.logs) { const b = by.get(l.date); if (b && (l.exam === 'fp2' || l.exam === 'boki2')) b[l.exam] += num(l.minutes); }
+    const data = days.map((d) => by.get(d));
+    if (!data.some((b) => b.fp2 + b.boki2 > 0)) { host.innerHTML = '<p class="chart-empty">記録するとここに学習時間のグラフが出ます。</p>'; tableBox.innerHTML = ''; return; }
+    const H = 210, ml = 42, mr = 8, mt = 12, mb = 26, pw = W - ml - mr, ph = H - mt - mb;
+    const maxV = Math.max(30, ...data.map((b) => b.fp2 + b.boki2));
+    const step = niceMinStep(maxV), top = Math.ceil(maxV / step) * step;
+    const y = (v) => mt + ph - (v / top) * ph;
+    let ax = '';
+    for (let v = 0; v <= top; v += step) ax += `<line class="${v === 0 ? 'baseline' : 'gridline'}" x1="${ml}" x2="${W - mr}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text x="${ml - 6}" y="${f1(y(v) + 4)}" text-anchor="end">${v >= 60 && v % 60 === 0 ? v / 60 + '時間' : v + '分'}</text>`;
+    const band = pw / data.length, bw = Math.max(3, Math.min(18, band * 0.62));
+    let bars = '';
+    const rounded = (x, yTop, w, yBot) => { const r = Math.min(4, w / 2, yBot - yTop); return `M${f1(x)},${f1(yBot)}V${f1(yTop + r)}Q${f1(x)},${f1(yTop)} ${f1(x + r)},${f1(yTop)}H${f1(x + w - r)}Q${f1(x + w)},${f1(yTop)} ${f1(x + w)},${f1(yTop + r)}V${f1(yBot)}Z`; };
+    data.forEach((b, i) => {
+      const x0 = ml + band * i + (band - bw) / 2;
+      let segs = '';
+      const y0 = y(0), y1 = y(b.fp2), y2 = y(b.fp2 + b.boki2);
+      const hasTop = b.boki2 > 0;
+      if (b.fp2 > 0) segs += hasTop ? `<rect class="seg-bar" x="${f1(x0)}" y="${f1(y1)}" width="${f1(bw)}" height="${f1(Math.max(1, y0 - y1))}" style="fill:var(--series-1)"/>` : `<path class="seg-bar" d="${rounded(x0, y1, bw, y0)}" style="fill:var(--series-1)"/>`;
+      if (hasTop) { const bottom = b.fp2 > 0 ? y1 - 2 : y0; if (bottom - y2 > 0.5) segs += `<path class="seg-bar" d="${rounded(x0, y2, bw, bottom)}" style="fill:var(--series-2)"/>`; }
+      bars += `<g class="band" tabindex="0" data-i="${i}" aria-label="${esc(mdw(b.d))}：FP2 ${b.fp2}分、簿記 ${b.boki2}分"><rect class="hit" x="${f1(ml + band * i)}" y="${mt}" width="${f1(band)}" height="${ph}"/>${segs}</g>`;
+    });
+    let xl = '';
+    data.forEach((b, i) => { if (i % 7 === 0 || i === data.length - 1) xl += `<text x="${f1(ml + band * i + band / 2)}" y="${H - 8}" text-anchor="${i === data.length - 1 ? 'end' : 'middle'}">${i === data.length - 1 ? '今日' : md(b.d)}</text>`; });
+    host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="直近4週間の学習時間"><g class="ax">${ax}${xl}</g>${bars}</svg><div class="tooltip" hidden></div>`;
+    const tip = host.querySelector('.tooltip'), svg = host.querySelector('svg');
+    const show = (el) => {
+      const b = data[Number(el.dataset.i)];
+      tip.innerHTML = `<div class="tt-date">${esc(mdw(b.d))}</div><div class="tt-row"><span class="tt-name"><span class="key-line" style="background:var(--series-1)"></span>FP2級</span><b>${esc(fmtMin(b.fp2))}</b></div><div class="tt-row"><span class="tt-name"><span class="key-line" style="background:var(--series-2)"></span>簿記2級</span><b>${esc(fmtMin(b.boki2))}</b></div>`;
+      tip.hidden = false;
+      const scale = svg.getBoundingClientRect().width / W || 1;
+      const cx = (ml + band * Number(el.dataset.i) + band / 2) * scale, tw = tip.offsetWidth;
+      let left = cx + 12; if (left + tw > host.clientWidth) left = cx - tw - 12; if (left < 0) left = 0;
+      tip.style.left = left + 'px'; tip.style.top = (mt * scale) + 'px';
+    };
+    const hide = () => { tip.hidden = true; };
+    host.querySelectorAll('.band').forEach((el) => { el.addEventListener('pointerenter', () => show(el)); el.addEventListener('focus', () => show(el)); el.addEventListener('pointerleave', hide); el.addEventListener('blur', hide); });
+    tableBox.innerHTML = `<table class="ledger"><thead><tr><th>日付</th><th class="num">FP2級</th><th class="num">簿記2級</th><th class="num">合計</th></tr></thead><tbody>${data.filter((b) => b.fp2 + b.boki2 > 0).reverse().map((b) => `<tr><td>${esc(mdw(b.d))}</td><td class="num">${b.fp2}分</td><td class="num">${b.boki2}分</td><td class="num">${b.fp2 + b.boki2}分</td></tr>`).join('')}</tbody></table>`;
+  }
+
+  function renderWeak() {
+    if (!S.loaded.logs) return;
+    for (const key of KEYS) {
+      const st = areaStats(key), pass = EXAMS[key].pass;
+      const chip = (s) => ({ weak: '<span class="chip crit">▲ 要強化</span>', almost: '<span class="chip warn">● もう少し</span>', strong: '<span class="chip good">✓ 得意</span>', nodata: '<span class="chip">問題演習なし</span>', untouched: '<span class="chip">未着手</span>' })[s.status];
+      $('#wk-' + key).innerHTML = `<table class="ledger"><thead><tr><th>分野</th><th class="num">正答率</th><th class="num">問題</th><th class="num">時間</th></tr></thead><tbody>${st.map((s) => `<tr>
+        <td class="area"><div class="wk-name">${esc(s.name)}</div><div class="wk-meta">${chip(s)}${s.last ? `<span class="muted small">最後 ${esc(md(s.last))}</span>` : ''}</div></td>
+        <td class="num">${s.acc === null ? '—' : pct0(s.acc)}${s.acc === null ? '' : `<span class="accbar" aria-hidden="true"><i style="width:${(s.acc * 100).toFixed(1)}%"></i><b style="left:calc(${pass * 100}% - 1px)"></b></span>`}</td>
+        <td class="num">${s.q}</td>
+        <td class="num">${esc(fmtMin(s.minutes))}</td>
+      </tr>`).join('')}</tbody></table>`;
+    }
+  }
+
+  /* ===================== log dialog ===================== */
+  function fillAreas(exam, selected) {
+    const sel = $('#ld-area');
+    sel.innerHTML = EXAMS[exam].areas.map((a) => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join('');
+    sel.value = selected || recommend(exam).area.id;
+  }
+  function openLog(opts = {}) {
+    if (!D) return;
+    const t = todayStr();
+    let exam = opts.exam;
+    if (!exam) { const act = D.ex.filter((e) => D.stats[e.key].active).sort((a, b) => D.stats[b.key].todayTarget - D.stats[a.key].todayTarget); exam = act.length ? act[0].key : 'fp2'; }
+    setRadio('ld-exam', exam);
+    fillAreas(exam, opts.area);
+    $('#ld-date').value = t;
+    $('#ld-min').value = opts.minutes ? String(opts.minutes) : '';
+    setRadio('ld-place', opts.place || 'commute');
+    $('#ld-kind').value = 'read';
+    $('#ld-q').value = ''; $('#ld-c').value = ''; $('#ld-note').value = '';
+    hideErr('ld');
+    $('#log-dialog').showModal();
+  }
+
+  /* ===================== routing & events ===================== */
+  function route() {
+    const h = (location.hash || '').replace('#', '');
+    ui.view = VIEWS.includes(h) ? h : 'today';
+    for (const v of VIEWS) {
+      $('#view-' + v).hidden = v !== ui.view;
+      const t = $('#tab-' + v); t.setAttribute('aria-selected', String(v === ui.view)); t.tabIndex = v === ui.view ? 0 : -1;
+    }
+    if (D) schedule();
+  }
+  function go(v) { if (location.hash !== '#' + v) location.hash = v; else route(); }
+
+  function initUI() {
+    document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => go(b.dataset.tab)));
+    $('.tabs').addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const i = VIEWS.indexOf(ui.view), n = VIEWS[(i + (e.key === 'ArrowRight' ? 1 : VIEWS.length - 1)) % VIEWS.length];
+      go(n); $('#tab-' + n).focus();
+    });
+    window.addEventListener('hashchange', route);
+
+    document.addEventListener('click', async (e) => {
+      const q = e.target.closest('[data-quick]');
+      if (q) {
+        const P = D ? D.P : planOf();
+        const place = q.dataset.quick;
+        const minutes = place === 'commute' ? Math.max(15, Math.round(P.commute / 2)) : place === 'lunch' ? (P.lunch || 15) : (P.evening || 30);
+        openLog({ place, minutes });
+        return;
+      }
+      const st = e.target.closest('[data-start]');
+      if (st) { const [exam, area] = st.dataset.start.split(':'); openLog({ exam, area }); return; }
+      const del = e.target.closest('[data-del-log]');
+      if (del) {
+        const l = S.logs.find((x) => x.id === del.dataset.delLog); if (!l) return;
+        if (await confirmBox(`${jpDate(l.date)}の記録（${areaName(l.exam, l.area)} ${fmtMin(num(l.minutes))}）を削除します。`)) await write(() => STORE.remove('logs/' + l.id), '削除しました');
+        return;
+      }
+      const mn = e.target.closest('[data-min]');
+      if (mn) { $('#ld-min').value = mn.dataset.min; return; }
+      const se = e.target.closest('[data-save-exam]');
+      if (se) {
+        const key = se.dataset.saveExam;
+        const date = $('#pl-date-' + key).value || null;
+        const hours = parseHours($('#pl-hours-' + key).value);
+        if (Number.isNaN(hours) || (hours !== null && (hours <= 0 || hours > 2000))) { toast('目標の学習時間は数字（時間）で入れてください'); return; }
+        const cur = S.exams[key] || {};
+        const ok = await write(() => STORE.set('exams/' + key, { name: EXAMS[key].name, date, tentative: $('#pl-tent-' + key).checked, targetHours: hours, status: radioVal('pl-status-' + key) || 'study', order: KEYS.indexOf(key), updatedAt: Date.now(), createdAt: num(cur.createdAt) || Date.now() }), `${EXAMS[key].name}の計画を保存しました`);
+        if (ok) { dirty.delete(key); schedule(); }
+      }
+    });
+    for (const key of KEYS) {
+      $(`.exam-plan[data-exam="${key}"]`).addEventListener('input', () => dirty.add(key));
+      $(`.exam-plan[data-exam="${key}"]`).addEventListener('change', () => dirty.add(key));
+    }
+    ['pl-commute', 'pl-lunch', 'pl-evening', 'pl-holiday', 'pl-split'].forEach((id) => $('#' + id).addEventListener('input', () => { dirty.add('budget'); updateSplitOut(); }));
+    $('#pl-save-budget').addEventListener('click', async () => {
+      const vals = ['commute', 'lunch', 'evening', 'holiday'].map((k) => { const raw = $('#pl-' + k).value.trim(); return raw === '' ? 0 : parseIntSafe(raw); });
+      if (vals.some((v) => Number.isNaN(v) || v < 0 || v > 1000)) { toast('時間は分の数字で入れてください'); return; }
+      const split = Number($('#pl-split').value) || 50;
+      const ok = await write(() => STORE.set('meta/plan', { commute: vals[0], lunch: vals[1], evening: vals[2], holiday: vals[3], split: { fp2: split, boki2: 100 - split }, updatedAt: Date.now() }), '使える時間を保存しました');
+      if (ok) { dirty.delete('budget'); schedule(); }
+    });
+
+    $('#lg-add').addEventListener('click', () => openLog({}));
+    document.querySelectorAll('input[name="ld-exam"]').forEach((r) => r.addEventListener('change', () => fillAreas(radioVal('ld-exam'))));
+    $('#ld-cancel').addEventListener('click', () => $('#log-dialog').close());
+    $('#log-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideErr('ld');
+      const exam = radioVal('ld-exam') || 'fp2';
+      const minutes = parseIntSafe($('#ld-min').value);
+      if (!(minutes > 0 && minutes <= 1440)) return showErr('ld', '時間を分の数字で入れてください（例：30）。');
+      const qRaw = $('#ld-q').value.trim(), cRaw = $('#ld-c').value.trim();
+      const questions = qRaw ? parseIntSafe(qRaw) : null, correct = cRaw ? parseIntSafe(cRaw) : null;
+      if ((qRaw && !(questions >= 0)) || (cRaw && !(correct >= 0))) return showErr('ld', '問題数と正解数は数字で入れてください。');
+      if (questions !== null && correct !== null && correct > questions) return showErr('ld', '正解数が問題数より多くなっています。');
+      if ((questions !== null) !== (correct !== null)) return showErr('ld', '問題数と正解数は両方入れるか、両方空欄にしてください。');
+      const data = { date: $('#ld-date').value || todayStr(), exam, area: $('#ld-area').value, minutes, place: radioVal('ld-place') || 'other', kind: $('#ld-kind').value, questions, correct, note: $('#ld-note').value.trim().slice(0, 200), createdAt: Date.now() };
+      const ok = await write(() => STORE.add('logs', data), `記録しました（${EXAMS[exam].short} ${fmtMin(minutes)}）`);
+      if (ok) $('#log-dialog').close();
+    });
+
+    $('#lg-export').addEventListener('click', async () => {
+      const cell = (v) => { const s = String(v ?? ''); const t = /^[=+\-@]/.test(s) ? "'" + s : s; return /[",\r\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+      const lines = [['日付', '試験', '分野', '分', '場所', '内容', '問題数', '正解数', 'メモ'].join(',')];
+      for (const l of [...S.logs].sort((a, b) => a.date.localeCompare(b.date))) lines.push([l.date, EXAMS[l.exam] ? EXAMS[l.exam].name : '', cell(areaName(l.exam, l.area)), num(l.minutes), PLACES[l.place] || '', KINDS[l.kind] || '', has(l.questions) ? num(l.questions) : '', has(l.correct) ? num(l.correct) : '', cell(l.note || '')].join(','));
+      const csv = lines.join('\r\n') + '\r\n';
+      if (DOWNLOADS) {
+        try { await DOWNLOADS.save({ filename: `学習記録_${todayStr().replace(/-/g, '')}.csv`, data: '﻿' + csv }); toast('保存しました'); return; } catch (err) { if (err && (err.code === 'declined' || err.code === 'rate_limited')) return; }
+      }
+      $('#exp-fallback').hidden = false; $('#exp-text').value = csv;
+    });
+
+    if ('ResizeObserver' in window) {
+      let rt = 0;
+      new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { if (D && ui.view === 'log' && Math.round($('#lg-chart').clientWidth) !== chartW) renderLogChart(); }, 80); }).observe($('#lg-chart'));
+    }
+  }
+
+  /* ===================== boot ===================== */
+  function subscribeAll() {
+    const fresh = new Set();
+    const timer = setTimeout(() => { if (!S.synced) { S.stale = true; renderSync(); } }, 10000);
+    const mark = (key, meta) => { if (meta && meta.fromCache) return; fresh.add(key); if (fresh.size >= 3 && !S.synced) { S.synced = true; S.stale = false; clearTimeout(timer); renderSync(); } };
+    const onErr = (e) => {
+      const code = e && e.code;
+      if (code === 'revoked' || code === 'not_granted') S.readOnly = true;
+      else S.subError = code === 'unavailable' ? '保存先との接続が切れました。ページを開き直してください。' : '記録を読み込めませんでした。ページを開き直してください。';
+      clearTimeout(timer); renderSync();
+    };
+    STORE.subscribe('exams', (rows, meta) => { S.exams = Object.fromEntries(rows.map((r) => [r.id, r])); S.loaded.exams = true; mark('exams', meta); schedule(); }, onErr);
+    STORE.subscribe('logs', (rows, meta) => { S.logs = rows.filter((r) => r.date && r.exam); S.loaded.logs = true; mark('logs', meta); schedule(); }, onErr);
+    STORE.subscribeDoc('meta/plan', (data, meta) => { S.plan = data; S.loaded.plan = true; mark('plan', meta); schedule(); }, onErr);
+  }
+
+  async function boot() {
+    initUI();
+    route();
+    renderSync();
+    const c = window.claude;
+    if (!c || typeof c.use !== 'function') { STORE = new LocalStore('goukaku-note:'); S.mode = 'local-file'; S.synced = true; subscribeAll(); renderSync(); return; }
+    let db = null, user = null;
+    try { [db, user, DOWNLOADS] = await Promise.all([c.use('db'), c.use('user'), c.use('downloads')]); } catch (e) { /* unavailable */ }
+    if (user) { try { if ((await user.isOwner()) === false) S.readOnly = true; } catch (e) { /* keep editable */ } }
+    if (db) { STORE = new CloudStore(db); S.mode = 'cloud'; }
+    else { STORE = new LocalStore('goukaku-note:'); S.mode = 'local-fallback'; S.synced = true; }
+    subscribeAll(); renderSync();
+  }
+  boot();
+})();
+</script>
