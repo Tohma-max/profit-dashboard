@@ -1095,8 +1095,216 @@ dialog::backdrop { background: var(--overlay); }
     };
   }
 
+  /* ---------- FP2 ---------- */
+  const roundTo = (x, d) => { const p = Math.pow(10, d); return Math.round(x * p) / p; };
+  const bracketTax = (table, v) => { const row = table.find((r) => v <= r[0]); return (v * row[1]) / 100 - row[2]; };
+  // 速算表（国税庁 No.2260 / No.4155 / No.4408 で確認。贈与税の一般税率は確認できた行と区分の連続性から算出）
+  const ITAX = [[1949000, 5, 0], [3299000, 10, 97500], [6949000, 20, 427500], [8999000, 23, 636000], [17999000, 33, 1536000], [39999000, 40, 2796000], [Infinity, 45, 4796000]];
+  const SOZOKU = [[10000000, 10, 0], [30000000, 15, 500000], [50000000, 20, 2000000], [100000000, 30, 7000000], [200000000, 40, 17000000], [300000000, 45, 27000000], [600000000, 50, 42000000], [Infinity, 55, 72000000]];
+  const GIFT_SP = [[2000000, 10, 0], [4000000, 15, 100000], [6000000, 20, 300000], [10000000, 30, 900000], [15000000, 40, 1900000], [30000000, 45, 2650000], [45000000, 50, 4150000], [Infinity, 55, 6400000]];
+  const GIFT_GEN = [[2000000, 10, 0], [3000000, 15, 100000], [4000000, 20, 250000], [6000000, 30, 650000], [10000000, 40, 1250000], [15000000, 45, 1750000], [30000000, 50, 2500000], [Infinity, 55, 4000000]];
+  const rowOf = (table, v) => table.find((r) => v <= r[0]);
+
+  const COEF_NAMES = ['終価係数', '現価係数', '年金終価係数', '減債基金係数', '年金現価係数', '資本回収係数'];
+  function coefs(r, n) {
+    const i = r / 100, g = Math.pow(1 + i, n);
+    return [g, 1 / g, (g - 1) / i, i / (g - 1), (1 - 1 / g) / i, i / (1 - 1 / g)].map((v) => roundTo(v, 3));
+  }
+  function fCoef() {
+    const r = pick([1, 1.5, 2, 2.5, 3, 4]), n = pick([5, 8, 10, 12, 15, 20]);
+    const c = coefs(r, n), k = R(0, 5);
+    const man = pick([50, 100, 120, 150, 200, 240, 300, 500, 600, 1000, 1200, 2000]);
+    const amt = man * 10000, ans = Math.round(amt * c[k]);
+    const scen = [
+      `${nf(man)}万円を年利${r}%で${n}年間複利運用すると、${n}年後の元利合計はいくらになるか。`,
+      `${n}年後に${nf(man)}万円を用意したい。年利${r}%で複利運用する場合、いま一括で用意すべき額はいくらか。`,
+      `毎年末に${nf(man)}万円ずつ、年利${r}%で複利運用しながら${n}年間積み立てると、${n}年後の元利合計はいくらになるか。`,
+      `${n}年後に${nf(man)}万円を用意したい。年利${r}%で複利運用しながら毎年末に同じ額を積み立てる場合、毎年の積立額はいくらか。`,
+      `今後${n}年間、毎年末に${nf(man)}万円ずつ受け取りたい。年利${r}%で複利運用する場合、いま用意すべき元本はいくらか。`,
+      `${nf(man)}万円を年利${r}%で複利運用しながら${n}年間、毎年末に同じ額ずつ取り崩すと、毎年いくら受け取れるか。`,
+    ];
+    const why = ['いまの額を将来の額に直す', '将来の額をいまの額に直す', '毎年の積立額から将来の合計を出す', '将来の目標額から毎年の積立額を出す', '毎年受け取る額からいまの元本を出す', 'いまの元本から毎年受け取れる額を出す'];
+    return {
+      title: '6つの係数', text: scen[k],
+      given: COEF_NAMES.map((nm, j) => [`${nm}（${r}%・${n}年）`, c[j].toFixed(3)]),
+      ask: '使う係数を選び、金額を求めなさい（円未満四捨五入）。税金・手数料は考えない。',
+      fields: [{ label: '使う係数', type: 'choice', options: COEF_NAMES, answer: k }, { label: '金額', unit: '円', answer: ans }],
+      steps: [`${why[k]}ので${COEF_NAMES[k]}を使う。`, `${nf(amt)}円 × ${c[k].toFixed(3)} = ${nf(ans)}円`, '終価と現価、年金終価と減債基金、年金現価と資本回収は、それぞれ逆数の関係。'],
+    };
+  }
+
+  function fRetire() {
+    const y = R(6, 40), mo = R(0, 11);
+    const yrs = mo > 0 ? y + 1 : y;
+    const ded = yrs <= 20 ? Math.max(800000, 400000 * yrs) : 8000000 + 700000 * (yrs - 20);
+    const X = ded + R(5, 150) * 100000;
+    const income = (X - ded) / 2;
+    const period = `${y}年${mo ? mo + 'か月' : ''}`;
+    return {
+      title: '退職所得', text: `会社員Aさん（役員ではない）が勤続${period}で退職し、退職一時金${nf(X)}円を受け取った。障害者になったことが原因の退職ではない。`,
+      given: [['勤続期間', period], ['退職一時金', `${nf(X)}円`]],
+      ask: '退職所得控除額と退職所得の金額を求めなさい。',
+      fields: [{ label: '退職所得控除額', unit: '円', answer: ded }, { label: '退職所得の金額', unit: '円', answer: income }],
+      steps: [
+        `勤続年数は1年未満の端数を切り上げて${yrs}年`,
+        yrs <= 20 ? `20年以下なので 40万円 × ${yrs}年 = ${nf(ded)}円` : `20年を超えるので 800万円 + 70万円 ×（${yrs}年 − 20年）= ${nf(ded)}円`,
+        `退職所得の金額 =（${nf(X)}円 − ${nf(ded)}円）× 1/2 = ${nf(income)}円`,
+        '勤続5年以下の役員等は2分の1にしないなど、短期の退職には別のルールがある。',
+      ],
+    };
+  }
+
+  function fIncomeTax() {
+    const ded = R(1000, 4000) * 1000 + R(1, 999);
+    const total = ded + R(500, 22000) * 1000 + R(0, 999);
+    const raw = total - ded, t = Math.floor(raw / 1000) * 1000;
+    const row = rowOf(ITAX, t), tax = (t * row[1]) / 100 - row[2];
+    return {
+      title: '所得税額（速算表）', text: '会社員Cさんの今年の所得は次のとおり。',
+      given: [['総所得金額', `${nf(total)}円`], ['所得控除の合計額', `${nf(ded)}円`]],
+      ask: '課税総所得金額と所得税額を求めなさい。税額控除はなく、復興特別所得税は考えない。',
+      fields: [{ label: '課税総所得金額', unit: '円', answer: t }, { label: '所得税額', unit: '円', answer: tax }],
+      steps: [
+        `${nf(total)}円 − ${nf(ded)}円 = ${nf(raw)}円 → 1,000円未満を切り捨てて ${nf(t)}円`,
+        `速算表の区分：税率${row[1]}%、控除額${nf(row[2])}円`,
+        `所得税額 = ${nf(t)}円 × ${row[1]}% − ${nf(row[2])}円 = ${nf(tax)}円`,
+      ],
+    };
+  }
+
+  function fLand() {
+    const res = Math.random() < 0.6;
+    const zone = res ? pick(['第一種住居地域', '第二種住居地域', '第一種中高層住居専用地域']) : pick(['商業地域', '近隣商業地域']);
+    const S = R(10, 40) * 10;
+    const bc = zone === '商業地域' ? 80 : res ? pick([50, 60]) : pick([60, 80]);
+    const fr = res ? pick([150, 200, 300]) : pick([300, 400, 500, 600]);
+    const W = R(4, 13);
+    const corner = Math.random() < 0.35;
+    const mult = res ? 4 : 6;
+    const roadFr = W * mult * 10;
+    const effFr = W < 12 ? Math.min(fr, roadFr) : fr;
+    const bcEff = bc + (corner ? 10 : 0);
+    const area = (S * bcEff) / 100, floor = (S * effFr) / 100;
+    return {
+      title: '建蔽率・容積率', text: `${zone}にある敷地（${S}㎡）に建物を建てる。敷地は幅員${W}mの道路に接している。${corner ? '特定行政庁が指定する角地にあたる。' : ''}防火地域・準防火地域の指定はなく、前面道路の幅員に乗じる数値は特定行政庁の指定のない原則どおりとする。`,
+      given: [['用途地域', zone], ['敷地面積', `${S}㎡`], ['指定建蔽率', `${bc}%`], ['指定容積率', `${fr}%`], ['前面道路の幅員', `${W}m`], ['角地', corner ? '特定行政庁が指定する角地' : 'なし']],
+      ask: '建築面積の最高限度と延べ面積の最高限度を求めなさい。',
+      fields: [{ label: '建築面積の最高限度', unit: '㎡', answer: area }, { label: '延べ面積の最高限度', unit: '㎡', answer: floor }],
+      steps: [
+        corner ? `建蔽率 = 指定${bc}% + 角地の緩和10% = ${bcEff}%` : `建蔽率 = 指定${bc}%`,
+        `建築面積の最高限度 = ${S}㎡ × ${bcEff}% = ${nf(area)}㎡`,
+        W < 12 ? `前面道路が12m未満なので、${W}m × ${mult}/10 = ${roadFr}% と指定容積率${fr}%の小さいほう → ${effFr}%（${res ? '住居系' : '住居系以外'}の乗数は${mult}/10）` : `前面道路が12m以上なので、指定容積率${fr}%をそのまま使う`,
+        `延べ面積の最高限度 = ${S}㎡ × ${effFr}% = ${nf(floor)}㎡`,
+      ],
+    };
+  }
+
+  function fInherit() {
+    const spouse = Math.random() < 0.75;
+    const k = spouse ? R(1, 3) : R(2, 3);
+    const heirs = (spouse ? 1 : 0) + k;
+    const basic = 30000000 + 6000000 * heirs;
+    const V = R(5, 50) * 6000000, T = basic + V;
+    const shares = [];
+    if (spouse) shares.push(['配偶者', V / 2]);
+    for (let j = 1; j <= k; j++) shares.push([`子${j}`, spouse ? V / 2 / k : V / k]);
+    const lines = shares.map(([who, s]) => { const row = rowOf(SOZOKU, s); return { who, s, tax: (s * row[1]) / 100 - row[2], row }; });
+    const total = lines.reduce((a, l) => a + l.tax, 0);
+    return {
+      title: '相続税の総額', text: `被相続人の相続人は${spouse ? `配偶者と子${k}人` : `子${k}人`}。養子や相続を放棄した人はいない。相続人全員の課税価格の合計額は${nf(T)}円。`,
+      given: [['課税価格の合計額', `${nf(T)}円`], ['法定相続人', spouse ? `配偶者・子${k}人（計${heirs}人）` : `子${k}人`]],
+      ask: '遺産に係る基礎控除額、課税遺産総額、相続税の総額を求めなさい。',
+      fields: [{ label: '遺産に係る基礎控除額', unit: '円', answer: basic }, { label: '課税遺産総額', unit: '円', answer: V }, { label: '相続税の総額', unit: '円', answer: total }],
+      steps: [
+        `基礎控除額 = 3,000万円 + 600万円 × ${heirs}人 = ${nf(basic)}円`,
+        `課税遺産総額 = ${nf(T)}円 − ${nf(basic)}円 = ${nf(V)}円`,
+        ...lines.map((l) => `${l.who}：法定相続分 ${nf(l.s)}円 × ${l.row[1]}% − ${nf(l.row[2])}円 = ${nf(l.tax)}円`),
+        `相続税の総額 = ${lines.map((l) => nf(l.tax)).join(' + ')} = ${nf(total)}円`,
+      ],
+    };
+  }
+
+  function fGift() {
+    const special = Math.random() < 0.55;
+    let who, age, reason;
+    if (special) { who = pick(['父', '母', '祖父', '祖母']); age = R(18, 45); reason = '18歳以上の人が直系尊属から受けた贈与なので特例税率'; }
+    else if (Math.random() < 0.5) { who = pick(['兄', '叔父', '知人']); age = R(20, 45); reason = '直系尊属以外からの贈与なので一般税率'; }
+    else { who = pick(['父', '母']); age = 17; reason = '直系尊属からでも、その年の1月1日に18歳未満なので一般税率'; }
+    const X = R(15, 120) * 100000 + (Math.random() < 0.3 ? 50000 : 0);
+    const base = X - 1100000;
+    const table = special ? GIFT_SP : GIFT_GEN, row = rowOf(table, base), tax = (base * row[1]) / 100 - row[2];
+    return {
+      title: '贈与税（暦年課税）', text: `Bさん（今年1月1日時点で${age}歳）は、今年${who}から現金${nf(X)}円の贈与を受けた。今年受けた贈与はこれだけで、相続時精算課税は選んでいない。`,
+      given: [['贈与を受けた額', `${nf(X)}円`], ['贈与した人', who], ['Bさんの年齢（1月1日時点）', `${age}歳`]],
+      ask: '贈与税額を求めなさい。',
+      fields: [{ label: '贈与税額', unit: '円', answer: tax }],
+      steps: [`基礎控除後の課税価格 = ${nf(X)}円 − 110万円 = ${nf(base)}円`, `${reason}を使う。区分は税率${row[1]}%、控除額${nf(row[2])}円`, `贈与税額 = ${nf(base)}円 × ${row[1]}% − ${nf(row[2])}円 = ${nf(tax)}円`],
+    };
+  }
+
+  function fBond() {
+    const c = pick([0.5, 0.8, 1, 1.2, 1.5, 2]);
+    const P = pick([97, 97.5, 98, 98.5, 99, 99.5, 100.5, 101, 101.5, 102, 102.5, 103]);
+    if (Math.random() < 0.5) {
+      const n = pick([3, 4, 5, 6, 8, 10]);
+      const gain = (100 - P) / n, y = ((c + gain) / P) * 100, ans = roundTo(y, 2);
+      if (ans < 0.1) return fBond();
+      return {
+        title: '債券の最終利回り', text: `表面利率${c.toFixed(1)}%、残存期間${n}年の固定利付債券を、額面100円あたり${P.toFixed(2)}円で買い、満期まで持つ。`,
+        given: [['表面利率', `${c.toFixed(1)}%`], ['購入価格', `${P.toFixed(2)}円`], ['残存期間', `${n}年`]],
+        ask: '最終利回り（単利・年率）を求めなさい。％の小数点以下第3位を四捨五入する。税金・手数料は考えない。',
+        fields: [{ label: '最終利回り', unit: '%', decimals: 2, answer: ans }],
+        steps: [`1年あたりの差損益 =（100円 − ${P.toFixed(2)}円）÷ ${n}年 = ${gain.toFixed(4)}円`, `最終利回り =（${c.toFixed(1)}円 + ${gain.toFixed(4)}円）÷ ${P.toFixed(2)}円 × 100 = ${y.toFixed(4)}% → ${ans.toFixed(2)}%`],
+      };
+    }
+    const m = pick([2, 3, 4, 5]);
+    const S = pick([98, 98.5, 99, 99.5, 100, 100.5, 101, 101.5, 102, 103]);
+    const gain = (S - P) / m, y = ((c + gain) / P) * 100, ans = roundTo(y, 2);
+    if (ans < 0.1) return fBond();
+    return {
+      title: '債券の所有期間利回り', text: `表面利率${c.toFixed(1)}%の固定利付債券を額面100円あたり${P.toFixed(2)}円で買い、${m}年後に${S.toFixed(2)}円で売った。`,
+      given: [['表面利率', `${c.toFixed(1)}%`], ['購入価格', `${P.toFixed(2)}円`], ['売却価格', `${S.toFixed(2)}円`], ['所有期間', `${m}年`]],
+      ask: '所有期間利回り（単利・年率）を求めなさい。％の小数点以下第3位を四捨五入する。税金・手数料は考えない。',
+      fields: [{ label: '所有期間利回り', unit: '%', decimals: 2, answer: ans }],
+      steps: [`1年あたりの差損益 =（${S.toFixed(2)}円 − ${P.toFixed(2)}円）÷ ${m}年 = ${gain.toFixed(4)}円`, `所有期間利回り =（${c.toFixed(1)}円 + ${gain.toFixed(4)}円）÷ ${P.toFixed(2)}円 × 100 = ${y.toFixed(4)}% → ${ans.toFixed(2)}%`],
+    };
+  }
+
+  function fStock() {
+    const Nm = pick([1000, 2000, 5000, 8000, 10000]);
+    const eps = pick([50, 80, 100, 120, 150, 200, 250]);
+    const bps = eps * pick([8, 10, 12, 15, 20]);
+    const dps = Math.round((eps * pick([20, 25, 30, 40, 50])) / 100);
+    const p = eps * R(8, 30) + pick([0, 10, 20, 50]);
+    const NI = (eps * Nm) / 100, E = (bps * Nm) / 100, Dv = (dps * Nm) / 100;
+    const all = [
+      { label: 'PER', unit: '倍', decimals: 1, answer: roundTo(p / eps, 1), step: `EPS = ${nf(NI)}百万円 ÷ ${nf(Nm)}万株 = ${eps}円、PER = ${nf(p)}円 ÷ ${eps}円 = ${(p / eps).toFixed(3)}倍` },
+      { label: 'PBR', unit: '倍', decimals: 2, answer: roundTo(p / bps, 2), step: `BPS = ${nf(E)}百万円 ÷ ${nf(Nm)}万株 = ${nf(bps)}円、PBR = ${nf(p)}円 ÷ ${nf(bps)}円 = ${(p / bps).toFixed(4)}倍` },
+      { label: 'ROE', unit: '%', decimals: 1, answer: roundTo((eps / bps) * 100, 1), step: `ROE = 当期純利益 ${nf(NI)}百万円 ÷ 自己資本 ${nf(E)}百万円 × 100 = ${((eps / bps) * 100).toFixed(3)}%` },
+      { label: '配当利回り', unit: '%', decimals: 2, answer: roundTo((dps / p) * 100, 2), step: `1株あたり配当 = ${nf(Dv)}百万円 ÷ ${nf(Nm)}万株 = ${dps}円、配当利回り = ${dps}円 ÷ ${nf(p)}円 × 100 = ${((dps / p) * 100).toFixed(4)}%` },
+      { label: '配当性向', unit: '%', decimals: 1, answer: roundTo((dps / eps) * 100, 1), step: `配当性向 = 配当総額 ${nf(Dv)}百万円 ÷ 当期純利益 ${nf(NI)}百万円 × 100 = ${((dps / eps) * 100).toFixed(3)}%` },
+    ];
+    const chosen = all.map((f, i) => [Math.random(), i]).sort((a, b) => a[0] - b[0]).slice(0, 3).map(([, i]) => all[i]).sort((a, b) => all.indexOf(a) - all.indexOf(b));
+    return {
+      title: '株式の投資指標', text: 'X社の株価と直近の決算の数値は次のとおり。',
+      given: [['株価', `${nf(p)}円`], ['発行済株式数', `${nf(Nm)}万株`], ['当期純利益', `${nf(NI)}百万円`], ['自己資本', `${nf(E)}百万円`], ['年間配当金の総額', `${nf(Dv)}百万円`]],
+      ask: `${chosen.map((f) => f.label).join('・')}を求めなさい。倍率は指定の桁で四捨五入（PERは小数第1位、PBRは小数第2位、ROE・配当性向は％の小数第1位、配当利回りは％の小数第2位まで）。`,
+      fields: chosen.map(({ label, unit, decimals, answer }) => ({ label, unit, decimals, answer })),
+      steps: chosen.map((f) => f.step),
+    };
+  }
+
   const GENS = {
-    fp2: [],
+    fp2: [
+      { id: 'coef', name: '6つの係数', area: 'life', fn: fCoef },
+      { id: 'retire', name: '退職所得', area: 'tax', fn: fRetire },
+      { id: 'itax', name: '所得税額（速算表）', area: 'tax', fn: fIncomeTax },
+      { id: 'land', name: '建蔽率・容積率', area: 'estate', fn: fLand },
+      { id: 'inherit', name: '相続税の総額', area: 'inherit', fn: fInherit },
+      { id: 'gift', name: '贈与税（暦年課税）', area: 'inherit', fn: fGift },
+      { id: 'bond', name: '債券の利回り', area: 'fin', fn: fBond },
+      { id: 'stock', name: '株式の投資指標', area: 'fin', fn: fStock },
+    ],
     boki2: [
       { id: 'mat', name: '直接材料費の差異分析', area: 'hyojun', fn: gMaterial },
       { id: 'lab', name: '直接労務費の差異分析', area: 'hyojun', fn: gLabor },
@@ -1112,6 +1320,7 @@ dialog::backdrop { background: var(--overlay); }
   window.StudyDrills = GENS;
 
   const drill = { sid: uid(), exam: 'boki2', q: null, prev: null, shownAt: 0, answered: false, count: 0, total: 0, correct: 0, ms: 0, perArea: {} };
+  window.StudyDrillState = drill;
   const drillExams = () => KEYS.filter((k) => GENS[k].length);
   function setupDrillControls() {
     const list = drillExams();
@@ -1141,7 +1350,9 @@ dialog::backdrop { background: var(--overlay); }
     drill.q = q; drill.prev = g.id; drill.shownAt = Date.now(); drill.answered = false; drill.count += 1;
     const fieldHtml = q.fields.map((f, i) => `<div class="ans" id="dr-ans-${i}">
         <label for="dr-a${i}">${esc(f.label)}</label>
-        <div class="ans-row"><div class="ans-in"><input id="dr-a${i}" inputmode="${f.unit === '%' ? 'decimal' : 'numeric'}" autocomplete="off" enterkeyhint="${i === q.fields.length - 1 ? 'done' : 'next'}"><span class="unit">${esc(f.unit)}</span></div>
+        <div class="ans-row">${f.type === 'choice'
+          ? `<select id="dr-a${i}"><option value="">選んでください</option>${f.options.map((o, j) => `<option value="${j}">${esc(o)}</option>`).join('')}</select>`
+          : `<div class="ans-in"><input id="dr-a${i}" inputmode="${decOf(f) > 0 ? 'decimal' : 'numeric'}" autocomplete="off" enterkeyhint="${i === q.fields.length - 1 ? 'done' : 'next'}"><span class="unit">${esc(f.unit)}</span></div>`}
         ${f.diff ? `<div class="seg" role="radiogroup" aria-label="${esc(f.label)}の向き"><input type="radio" name="dr-s${i}" id="dr-s${i}-u" value="-1"><label for="dr-s${i}-u">不利（借方）</label><input type="radio" name="dr-s${i}" id="dr-s${i}-f" value="1"><label for="dr-s${i}-f">有利（貸方）</label></div>` : ''}</div>
         <p class="ans-result" id="dr-r${i}" hidden></p>
       </div>`).join('');
@@ -1157,13 +1368,22 @@ dialog::backdrop { background: var(--overlay); }
       </form>
       <div class="explain" id="dr-explain" hidden></div>`;
   }
-  const fmtAnswer = (f) => (f.unit === '%' ? `${f.answer.toFixed(1)}%` : f.diff ? `${nf(Math.abs(f.answer))}円（${f.answer < 0 ? '不利・借方' : '有利・貸方'}）` : yenStr(f.answer));
+  function decOf(f) { return f.decimals !== undefined ? f.decimals : f.unit === '%' ? 1 : 0; }
+  function fmtAnswer(f) {
+    if (f.type === 'choice') return f.options[f.answer];
+    if (f.diff) return `${nf(Math.abs(f.answer))}円（${f.answer < 0 ? '不利・借方' : '有利・貸方'}）`;
+    const d = decOf(f);
+    if (f.unit === '円') return yenStr(f.answer);
+    return `${d > 0 ? f.answer.toFixed(d) : nf(f.answer)}${f.unit}`;
+  }
   function checkAnswer() {
     const q = drill.q;
     if (!q || drill.answered) return;
     const vals = [];
     for (let i = 0; i < q.fields.length; i++) {
-      const f = q.fields[i], raw = $('#dr-a' + i).value.trim(), v = parseNum(raw);
+      const f = q.fields[i], raw = $('#dr-a' + i).value.trim();
+      if (f.type === 'choice') { if (raw === '') return showErr('dr', `「${f.label}」を選んでください。`); vals.push(Number(raw)); continue; }
+      const v = parseNum(raw);
       if (raw === '' || Number.isNaN(v)) return showErr('dr', `「${f.label}」を数字で入れてください。`);
       let sign = 1;
       if (f.diff) { const s = radioVal('dr-s' + i); if (!s) return showErr('dr', `「${f.label}」が不利か有利かを選んでください。`); sign = Number(s); }
@@ -1173,13 +1393,13 @@ dialog::backdrop { background: var(--overlay); }
     drill.answered = true;
     let ok = 0;
     q.fields.forEach((f, i) => {
-      const right = Math.abs(vals[i] - f.answer) <= (f.unit === '%' ? 0.0501 : 0.5);
+      const right = f.type === 'choice' ? vals[i] === f.answer : Math.abs(vals[i] - f.answer) <= 0.5 * Math.pow(10, -decOf(f)) + 1e-9;
       if (right) ok += 1;
       const r = $('#dr-r' + i); r.hidden = false; r.className = 'ans-result ' + (right ? 'ok' : 'ng');
       r.textContent = right ? '✓ 正解' : `✗ 正解は ${fmtAnswer(f)}`;
       $('#dr-ans-' + i).classList.add(right ? 'is-ok' : 'is-ng');
     });
-    $('#dr-form').querySelectorAll('input').forEach((el) => { el.disabled = true; });
+    $('#dr-form').querySelectorAll('input, select').forEach((el) => { el.disabled = true; });
     $('#dr-actions').innerHTML = `<p class="score ${ok === q.fields.length ? 'ok' : 'ng'}">${ok} / ${q.fields.length} 正解</p><button type="button" class="btn" data-dr="next">次の問題</button>`;
     const ex = $('#dr-explain');
     ex.innerHTML = `<h3>解き方</h3><ol class="steps">${q.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`;
