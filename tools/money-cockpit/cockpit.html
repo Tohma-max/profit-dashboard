@@ -29,6 +29,7 @@
   --good-bg: #dff0e3;
   --warn-ink: #774800;
   --warn-bg: #fcefd2;
+  --warn-fill: #e3a008;
   --crit-ink: #a3261f;
   --crit-bg: #fae1de;
   --grid: #e1e8e4;
@@ -46,7 +47,7 @@
     --rule: #29363c; --accent: #62b4d0; --accent-ink: #062530; --accent-soft: #19363f; --stamp: #f06b5e;
     --gain-ink: #86b8f2; --loss-ink: #ff8f85;
     --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --pos: #3987e5; --neg: #e66767;
-    --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
+    --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --warn-fill: #c98500; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
     --grid: #223036; --axis: #36464d; --overlay: rgba(0, 0, 0, 0.6); --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
     color-scheme: dark;
   }
@@ -56,7 +57,7 @@
   --rule: #29363c; --accent: #62b4d0; --accent-ink: #062530; --accent-soft: #19363f; --stamp: #f06b5e;
   --gain-ink: #86b8f2; --loss-ink: #ff8f85;
   --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --pos: #3987e5; --neg: #e66767;
-  --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
+  --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --warn-fill: #c98500; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
   --grid: #223036; --axis: #36464d; --overlay: rgba(0, 0, 0, 0.6); --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
@@ -264,6 +265,18 @@ dialog::backdrop { background: var(--overlay); }
 #toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px); opacity: 0; background: var(--ink); color: var(--surface); padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 0.9rem; transition: opacity 0.2s, transform 0.2s; z-index: 20; pointer-events: none; max-width: calc(100vw - 32px); text-align: center; }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* trades */
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--ink-2); cursor: pointer; }
+input[type="checkbox"] { width: 20px; height: 20px; min-height: 0; accent-color: var(--accent); margin: 0; flex: none; }
+input[type="file"] { padding: 8px; background: var(--surface); margin-top: 8px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+.map-grid { margin: 10px 0; }
+.big-num { font-size: 1.4rem; }
+.insights li { color: var(--ink); }
+#bonus-panel { scroll-margin-top: calc(110px + env(safe-area-inset-top, 0px)); }
+#tr-import { display: grid; gap: 8px; margin-top: 10px; }
+#tr-import p { margin: 0; }
+
 @media (max-width: 480px) {
   .kv > div { grid-template-columns: 1fr; gap: 0; }
 }
@@ -286,7 +299,7 @@ dialog::backdrop { background: var(--overlay); }
       <button type="button" class="tab" role="tab" id="tab-overview" data-tab="overview" aria-controls="view-overview" aria-selected="true">概要</button>
       <button type="button" class="tab" role="tab" id="tab-debts" data-tab="debts" aria-controls="view-debts" aria-selected="false" tabindex="-1">返済</button>
       <button type="button" class="tab" role="tab" id="tab-pnl" data-tab="pnl" aria-controls="view-pnl" aria-selected="false" tabindex="-1">特別損益</button>
-      <button type="button" class="tab" role="tab" id="tab-bonus" data-tab="bonus" aria-controls="view-bonus" aria-selected="false" tabindex="-1">ボーナス</button>
+      <button type="button" class="tab" role="tab" id="tab-trades" data-tab="trades" aria-controls="view-trades" aria-selected="false" tabindex="-1">トレード</button>
       <button type="button" class="tab" role="tab" id="tab-data" data-tab="data" aria-controls="view-data" aria-selected="false" tabindex="-1">データ</button>
     </nav>
   </div>
@@ -310,6 +323,8 @@ dialog::backdrop { background: var(--overlay); }
     <div class="quick">
       <button type="button" class="btn" data-go="debts" data-focus="pay-amount">＋ 返済を記録</button>
       <button type="button" class="btn ghost" data-go="pnl" data-focus="pnl-invest">＋ 特別損益を記録</button>
+      <button type="button" class="btn ghost" data-go="trades" data-focus="tr-name">＋ トレードを記録</button>
+      <button type="button" class="btn ghost" data-go="bonus">ボーナスの配分</button>
     </div>
   </section>
 
@@ -381,6 +396,7 @@ dialog::backdrop { background: var(--overlay); }
         </div>
         <div class="field span"><label for="pnl-note">メモ</label><input id="pnl-note" autocomplete="off" maxlength="200" placeholder="任意（店名、ルールを守れたか など）"></div>
         <p class="preview span" id="pnl-preview" aria-live="polite"></p>
+        <p class="hint span" id="pnl-trade-hint" hidden>デイトレの損益は「トレード」タブの日誌から日ごとに自動で集計しています。ここにも入れると二重に数えられます。</p>
         <p class="form-error span" id="pnl-error" hidden></p>
         <div class="actions span"><button type="submit" class="btn">記録する</button></div>
       </form>
@@ -407,8 +423,8 @@ dialog::backdrop { background: var(--overlay); }
     </div>
   </section>
 
-  <section class="view" id="view-bonus" role="tabpanel" aria-labelledby="tab-bonus" hidden>
-    <div class="panel">
+  <section class="view" id="view-bonus" aria-label="ボーナス配分" hidden>
+    <div class="panel" id="bonus-panel">
       <h2>ボーナスの使い道を決める</h2>
       <div class="form-grid">
         <div class="field"><label for="bn-date">支給日</label><input id="bn-date" type="date"></div>
@@ -430,6 +446,108 @@ dialog::backdrop { background: var(--overlay); }
     <div class="panel"><h2>配分したときの変化</h2><div id="bn-result"></div></div>
   </section>
 
+  <section class="view" id="view-trades" role="tabpanel" aria-labelledby="tab-trades" hidden>
+    <div class="seg" role="radiogroup" aria-label="トレードの画面">
+      <input type="radio" name="tr-sub" id="tr-sub-journal" value="journal" checked><label for="tr-sub-journal">日誌と分析</label>
+      <input type="radio" name="tr-sub" id="tr-sub-risk" value="risk"><label for="tr-sub-risk">発注前の計算</label>
+    </div>
+
+    <div class="stack" id="tr-journal">
+      <div class="panel">
+        <h2>取引を記録</h2>
+        <details id="tr-import-box" open>
+          <summary>SBI証券のCSVを取り込む</summary>
+          <p class="small">口座管理の「取引履歴」（約定履歴）や実現損益の画面でダウンロードしたCSVを選んでください。ファイルはこの端末の中で読み、取引ごとの日付・銘柄・数量・損益だけを保存します。口座番号などは保存しません。</p>
+          <label for="tr-file" class="sr">CSVファイル</label>
+          <input type="file" id="tr-file" accept=".csv,text/csv">
+          <div id="tr-import"></div>
+        </details>
+        <details id="tr-manual-box">
+          <summary>手で記録する</summary>
+          <form id="tr-form" class="form-grid" novalidate>
+            <div class="field"><label for="tr-date">日付</label><input id="tr-date" type="date"></div>
+            <div class="field"><label for="tr-time">エントリー時刻（任意）</label><input id="tr-time" type="time"></div>
+            <div class="field span"><label for="tr-name">銘柄（名前かコード）</label><input id="tr-name" autocomplete="off" maxlength="40" placeholder="例：7203 トヨタ"></div>
+            <div class="field span"><span class="label" id="tr-dir-label">方向</span>
+              <div class="seg" role="radiogroup" aria-labelledby="tr-dir-label">
+                <input type="radio" name="tr-dir" id="tr-dir-long" value="long" checked><label for="tr-dir-long">買い→売り</label>
+                <input type="radio" name="tr-dir" id="tr-dir-short" value="short"><label for="tr-dir-short">売り→買い</label>
+              </div>
+            </div>
+            <div class="field"><label for="tr-qty">株数</label><input id="tr-qty" inputmode="numeric" autocomplete="off" placeholder="例：100"></div>
+            <div class="field"><label for="tr-entry">エントリー価格</label><input id="tr-entry" inputmode="decimal" autocomplete="off" placeholder="例：1520"></div>
+            <div class="field"><label for="tr-exit">決済価格</label><input id="tr-exit" inputmode="decimal" autocomplete="off" placeholder="例：1535"></div>
+            <div class="field"><label for="tr-fee">手数料など（円・任意）</label><input id="tr-fee" inputmode="numeric" autocomplete="off" placeholder="0"></div>
+            <div class="field"><label for="tr-tag">手法</label><select id="tr-tag"></select></div>
+            <div class="field"><span class="label" id="tr-rule-label">自分のルール</span>
+              <div class="seg" role="radiogroup" aria-labelledby="tr-rule-label">
+                <input type="radio" name="tr-rule" id="tr-rule-yes" value="yes" checked><label for="tr-rule-yes">守った</label>
+                <input type="radio" name="tr-rule" id="tr-rule-no" value="no"><label for="tr-rule-no">破った</label>
+              </div>
+            </div>
+            <div class="field span"><label for="tr-note">メモ</label><input id="tr-note" autocomplete="off" maxlength="200" placeholder="任意（入った理由、反省点など）"></div>
+            <p class="preview span" id="tr-preview" aria-live="polite"></p>
+            <p class="form-error span" id="tr-error" hidden></p>
+            <div class="actions span"><button type="submit" class="btn">記録する</button></div>
+          </form>
+        </details>
+      </div>
+      <div class="filter-row">
+        <div class="seg" role="radiogroup" aria-label="集計する期間">
+          <input type="radio" name="tr-range" id="tr-range-month" value="month" checked><label for="tr-range-month">今月</label>
+          <input type="radio" name="tr-range" id="tr-range-prev" value="prev"><label for="tr-range-prev">先月</label>
+          <input type="radio" name="tr-range" id="tr-range-3m" value="3m"><label for="tr-range-3m">3か月</label>
+          <input type="radio" name="tr-range" id="tr-range-year" value="year"><label for="tr-range-year">今年</label>
+          <input type="radio" name="tr-range" id="tr-range-all" value="all"><label for="tr-range-all">全期間</label>
+        </div>
+      </div>
+      <div class="tiles" id="tr-tiles"></div>
+      <div class="panel">
+        <h2>損益の積み上がり</h2>
+        <div class="chart" id="tr-chart" tabindex="0" aria-label="損益の積み上がりグラフ。左右の矢印キーで日を移動できます。"></div>
+        <details><summary>表で見る</summary><div class="table-scroll" id="tr-chart-table"></div></details>
+      </div>
+      <div class="panel"><h2>気づき</h2><ul class="notes insights" id="tr-insights"></ul></div>
+      <div class="grid-2">
+        <div class="panel"><h2>曜日別</h2><div class="table-scroll" id="tr-by-wd"></div></div>
+        <div class="panel"><h2>時間帯別</h2><div class="table-scroll" id="tr-by-hour"></div></div>
+        <div class="panel"><h2>銘柄別</h2><div class="table-scroll" id="tr-by-code"></div></div>
+        <div class="panel"><h2>手法・ルール別</h2><div class="table-scroll" id="tr-by-tag"></div></div>
+      </div>
+      <div class="panel"><h2>取引の一覧</h2><ul class="entries" id="tr-list"></ul></div>
+    </div>
+
+    <div class="stack" id="tr-risk" hidden>
+      <div class="panel">
+        <h2>今日の上限</h2>
+        <div id="rk-today"></div>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="field"><label for="rk-daily-loss">1日の損失上限（円）</label><input id="rk-daily-loss" inputmode="numeric" autocomplete="off"></div>
+          <div class="field"><label for="rk-daily-count">1日の取引回数の上限</label><input id="rk-daily-count" inputmode="numeric" autocomplete="off"></div>
+          <div class="field"><label for="rk-per-trade">1回の許容損失（円）</label><input id="rk-per-trade" inputmode="numeric" autocomplete="off"></div>
+        </div>
+        <div class="actions" style="margin-top:12px"><button type="button" class="btn small" id="rk-save">上限を保存</button></div>
+        <p class="hint">今日の損益と回数は、日誌に記録した今日の取引から数えます。</p>
+      </div>
+      <div class="panel">
+        <h2>株数と損切りの計算</h2>
+        <div class="form-grid">
+          <div class="field span"><span class="label" id="rk-dir-label">方向</span>
+            <div class="seg" role="radiogroup" aria-labelledby="rk-dir-label">
+              <input type="radio" name="rk-dir" id="rk-dir-long" value="long" checked><label for="rk-dir-long">買いから入る</label>
+              <input type="radio" name="rk-dir" id="rk-dir-short" value="short"><label for="rk-dir-short">売りから入る</label>
+            </div>
+          </div>
+          <div class="field"><label for="rk-entry">エントリー価格（円）</label><input id="rk-entry" inputmode="decimal" autocomplete="off" placeholder="例：1520"></div>
+          <div class="field"><label for="rk-stop">損切り価格（円）</label><input id="rk-stop" inputmode="decimal" autocomplete="off" placeholder="例：1505"></div>
+          <div class="field"><label for="rk-bp">買付余力（円・任意）</label><input id="rk-bp" inputmode="numeric" autocomplete="off" placeholder="空欄なら制限なし"></div>
+          <div class="field span"><label class="check"><input type="checkbox" id="rk-topix">TOPIX500の構成銘柄（呼値が細かい）</label></div>
+        </div>
+        <div id="rk-result" class="sim-result"></div>
+      </div>
+    </div>
+  </section>
+
   <section class="view" id="view-data" role="tabpanel" aria-labelledby="tab-data" hidden>
     <div class="panel"><h2>保存先</h2><div id="data-status"></div></div>
     <div class="panel" id="migrate-panel" hidden>
@@ -440,7 +558,7 @@ dialog::backdrop { background: var(--overlay); }
     <div class="panel">
       <h2>書き出し</h2>
       <p class="small">CSVはExcelでそのまま開けます（文字化けしない形式）。</p>
-      <div class="actions"><button type="button" class="btn ghost" id="exp-pay">返済の記録をCSVで保存</button><button type="button" class="btn ghost" id="exp-pnl">特別損益をCSVで保存</button></div>
+      <div class="actions"><button type="button" class="btn ghost" id="exp-pay">返済の記録をCSVで保存</button><button type="button" class="btn ghost" id="exp-pnl">特別損益をCSVで保存</button><button type="button" class="btn ghost" id="exp-trades">トレード日誌をCSVで保存</button></div>
       <div id="exp-fallback" hidden>
         <p class="hint">この環境ではファイルを保存できないため、内容を表示しています。コピーして使ってください。</p>
         <label for="exp-text" class="sr">CSVの内容</label>
@@ -726,9 +844,9 @@ dialog::backdrop { background: var(--overlay); }
     async add(col, data) { const m = this.readCol(col); const id = uid(); m[id] = data; this.writeCol(col, m); return id; }
     async set(path, data) { const [col, id] = path.split('/'); const m = this.readCol(col); m[id] = data; this.writeCol(col, m); }
     async remove(path) { const [col, id] = path.split('/'); const m = this.readCol(col); delete m[id]; this.writeCol(col, m); }
-    count() { return ['debts', 'payments', 'pnl'].reduce((s, c) => s + Object.keys(this.readCol(c)).length, 0); }
-    dump() { const o = {}; for (const c of ['debts', 'payments', 'pnl', 'meta']) o[c] = this.readCol(c); return o; }
-    clear() { for (const c of ['debts', 'payments', 'pnl', 'meta']) { try { localStorage.removeItem(this.ns + c); } catch (e) { /* ignore */ } } }
+    count() { return ['debts', 'payments', 'pnl', 'trades'].reduce((s, c) => s + Object.keys(this.readCol(c)).length, 0); }
+    dump() { const o = {}; for (const c of ['debts', 'payments', 'pnl', 'trades', 'meta']) o[c] = this.readCol(c); return o; }
+    clear() { for (const c of ['debts', 'payments', 'pnl', 'trades', 'meta']) { try { localStorage.removeItem(this.ns + c); } catch (e) { /* ignore */ } } }
   }
 
   async function retry(fn) {
@@ -747,11 +865,11 @@ dialog::backdrop { background: var(--overlay); }
   }
 
   /* ===================== state ===================== */
-  const S = { debts: [], payments: [], pnl: [], bonus: null, loaded: { debts: false, payments: false, pnl: false, bonus: false }, mode: 'loading', synced: false, stale: false, readOnly: false, subError: '' };
+  const S = { debts: [], payments: [], pnl: [], trades: [], bonus: null, risk: null, loaded: { debts: false, payments: false, pnl: false, trades: false, bonus: false, risk: false }, mode: 'loading', synced: false, stale: false, readOnly: false, subError: '' };
   const LOCAL = new LocalStore('kansai-cockpit:');
   let STORE = null, DOWNLOADS = null, D = null;
-  const VIEWS = ['overview', 'debts', 'pnl', 'bonus', 'data'];
-  const ui = { view: 'overview', pnlRange: 'month' };
+  const VIEWS = ['overview', 'debts', 'pnl', 'trades', 'data'];
+  const ui = { view: 'overview', pnlRange: 'month', trRange: 'month', trSub: 'journal' };
 
   function derive() {
     const today = todayStr();
@@ -764,7 +882,11 @@ dialog::backdrop { background: var(--overlay); }
       R[d.id] = requiredMonthly(d, L[d.id], today);
       PC[d.id] = pace(d, L[d.id].repaid, today);
     }
-    return { today, debts, L, P, R, PC };
+    // Day-trade journal totals flow into 特別損益 as one read-only entry per day.
+    const jd = new Map();
+    for (const t of S.trades) { if (!t.date) continue; const g = jd.get(t.date) || { profit: 0, n: 0 }; g.profit += num(t.pnl); g.n += 1; jd.set(t.date, g); }
+    const virtual = [...jd.entries()].map(([date, g]) => ({ id: 'journal-' + date, date, category: 'trade', label: 'デイトレ（日誌）', invest: null, payout: null, profit: g.profit, note: `日誌の${g.n}件`, virtual: true, createdAt: 0 }));
+    return { today, debts, L, P, R, PC, allPnl: S.pnl.concat(virtual) };
   }
 
   let pending = false;
@@ -842,6 +964,7 @@ dialog::backdrop { background: var(--overlay); }
     renderDebts();
     renderPnl();
     renderBonus();
+    renderTrades();
     renderData();
   }
 
@@ -898,7 +1021,7 @@ dialog::backdrop { background: var(--overlay); }
     const ym = D.today.slice(0, 7);
     const monthPays = S.payments.filter((p) => String(p.date || '').slice(0, 7) === ym);
     const payTotal = monthPays.reduce((s, p) => s + num(p.amount), 0);
-    const monthPnl = S.pnl.filter((e) => String(e.date || '').slice(0, 7) === ym);
+    const monthPnl = D.allPnl.filter((e) => String(e.date || '').slice(0, 7) === ym);
     const agg = aggregatePnl(monthPnl);
     const withRate = debts.filter((d) => has(d.annualRate) && num(d.annualRate) > 0 && D.L[d.id].balance > 0);
     const missingRate = debts.some((d) => !has(d.annualRate) && D.L[d.id].balance > 0);
@@ -1109,8 +1232,9 @@ dialog::backdrop { background: var(--overlay); }
   const LABELS = { gamble: ['パチンコ', 'スロット', '競馬', '競艇', '競輪', 'オートレース', '宝くじ', '麻雀'], trade: ['日本株デイトレ', '信用デイトレ', 'PTS', '先物・オプション'], other: ['その他'] };
 
   function renderPnl() {
-    const rb = rangeBounds(ui.pnlRange, D.today, S.pnl);
-    const list = S.pnl.filter((e) => e.date && (!rb.from || e.date >= rb.from) && (!rb.to || e.date <= rb.to));
+    $('#pnl-trade-hint').hidden = !(radioVal('pnl-cat') === 'trade' && S.trades.length > 0);
+    const rb = rangeBounds(ui.pnlRange, D.today, D.allPnl);
+    const list = D.allPnl.filter((e) => e.date && (!rb.from || e.date >= rb.from) && (!rb.to || e.date <= rb.to));
     const a = aggregatePnl(list);
     $('#pnl-tiles').innerHTML = [
       tile(`${rb.label}の合計`, a.count ? sYen(a.total) : '¥0', `${a.count}件・勝ち${a.wins}・負け${a.losses}`, tone(a.total)),
@@ -1138,7 +1262,7 @@ dialog::backdrop { background: var(--overlay); }
       return `<li class="entry">
         <div class="e-main"><span class="e-date">${esc(mdw(e.date))}</span><span class="e-label">${esc(e.label || CAT[e.category] || '')}</span><span class="chip">${esc(CAT[e.category] || '')}</span></div>
         <div class="e-amt ${tone(num(e.profit))}">${esc(sYen(num(e.profit)))}</div>
-        <button type="button" class="icon-btn" data-del-pnl="${esc(e.id)}" aria-label="${esc(md(e.date) + ' ' + (e.label || '') + 'の記録を削除')}">×</button>
+        ${e.virtual ? '<button type="button" class="icon-btn" data-go="trades" aria-label="トレード日誌で見る">›</button>' : `<button type="button" class="icon-btn" data-del-pnl="${esc(e.id)}" aria-label="${esc(md(e.date) + ' ' + (e.label || '') + 'の記録を削除')}">×</button>`}
         ${sub ? `<div class="e-sub">${esc(sub)}</div>` : ''}
       </li>`;
     }).join('');
@@ -1284,7 +1408,7 @@ dialog::backdrop { background: var(--overlay); }
   /* ---------- データ ---------- */
   function renderData() {
     const where = S.mode === 'cloud' ? 'claude.ai のクラウド。このページを開けるスマホとPCで、同じ記録が見られます。' : S.mode === 'loading' ? '接続を確認しています…' : 'このブラウザの中だけ。ほかの端末とは共有されません。';
-    $('#data-status').innerHTML = `<p class="empty">${esc(where)}</p><p class="hint">借入 ${S.debts.length}件・返済 ${S.payments.length}件・特別損益 ${S.pnl.length}件</p>`;
+    $('#data-status').innerHTML = `<p class="empty">${esc(where)}</p><p class="hint">借入 ${S.debts.length}件・返済 ${S.payments.length}件・特別損益 ${S.pnl.length}件・トレード ${S.trades.length}件</p>`;
     const lc = S.mode === 'cloud' ? LOCAL.count() : 0;
     $('#migrate-panel').hidden = !(lc > 0);
     if (lc > 0) $('#migrate-count').textContent = `${lc}件`;
@@ -1304,8 +1428,8 @@ dialog::backdrop { background: var(--overlay); }
   async function exportCsv(kind) {
     if (!D) return;
     const stamp = todayStr().replace(/-/g, '');
-    const csv = kind === 'pay' ? paymentsCsv() : pnlCsv();
-    const filename = kind === 'pay' ? `返済の記録_${stamp}.csv` : `特別損益_${stamp}.csv`;
+    const csv = kind === 'pay' ? paymentsCsv() : kind === 'trades' ? tradesCsv() : pnlCsv();
+    const filename = kind === 'pay' ? `返済の記録_${stamp}.csv` : kind === 'trades' ? `トレード日誌_${stamp}.csv` : `特別損益_${stamp}.csv`;
     if (DOWNLOADS) {
       try { await DOWNLOADS.save({ filename, data: '﻿' + csv }); toast('保存しました'); return; } catch (e) {
         const code = e && e.code;
@@ -1316,14 +1440,473 @@ dialog::backdrop { background: var(--overlay); }
     $('#exp-fallback').hidden = false; $('#exp-text').value = csv;
   }
 
+  /* ===================== トレード日誌・発注前の計算 ===================== */
+  const TAGS = ['寄り付き', 'ブレイク', '押し目買い', '戻り売り', 'リバウンド狙い', '逆張り', 'ナンピン', '材料・ニュース', 'その他'];
+  const sumPnl = (list) => list.reduce((s, t) => s + num(t.pnl), 0);
+  const weekdayOf = (d) => new Date(parseD(d)).getUTCDay();
+  const cell = (r, i) => (i >= 0 && i < r.length ? String(r[i]).trim() : '');
+  function parsePrice(v) { const s = toHalf(String(v ?? '').trim()).replace(/[,，円¥￥\s]/g, ''); if (!/^\d+(\.\d+)?$/.test(s)) return NaN; return Number(s); }
+  function parseSigned(v) {
+    let s = toHalf(String(v ?? '').trim()).replace(/[,，円¥￥\s"]/g, '');
+    let neg = false;
+    if (/^[-−△▲]/.test(s)) { neg = true; s = s.slice(1); } else if (s.startsWith('+')) s = s.slice(1);
+    if (!/^\d+(\.\d+)?$/.test(s)) return NaN;
+    return neg ? -Number(s) : Number(s);
+  }
+  function sortTrades(list) {
+    return [...list].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)
+      || String(a.time || '99:99').localeCompare(String(b.time || '99:99'))
+      || num(a.seq) - num(b.seq) || num(a.createdAt) - num(b.createdAt));
+  }
+  function tradeStats(list) {
+    let wins = 0, losses = 0, gp = 0, gl = 0, total = 0, eq = 0, peak = 0, maxDD = 0, run = 0, maxRun = 0;
+    for (const t of list) {
+      const p = num(t.pnl);
+      total += p; eq += p;
+      if (eq > peak) peak = eq;
+      if (peak - eq > maxDD) maxDD = peak - eq;
+      if (p > 0) { wins += 1; gp += p; run = 0; } else if (p < 0) { losses += 1; gl -= p; run += 1; if (run > maxRun) maxRun = run; }
+    }
+    const n = list.length;
+    return { n, wins, losses, total, gp, gl, pf: gl > 0 ? gp / gl : gp > 0 ? Infinity : null, avgWin: wins ? gp / wins : 0, avgLoss: losses ? gl / losses : 0, winRate: n ? wins / n : 0, expectancy: n ? total / n : 0, maxDD, maxRun };
+  }
+  function groupBy(list, keyFn) {
+    const m = new Map();
+    for (const t of list) {
+      const k = keyFn(t);
+      if (k === null || k === undefined || k === '') continue;
+      const g = m.get(k) || { key: k, n: 0, total: 0, wins: 0 };
+      g.n += 1; g.total += num(t.pnl); if (num(t.pnl) > 0) g.wins += 1;
+      m.set(k, g);
+    }
+    return [...m.values()];
+  }
+  // Trades taken after two or more losses in a row on the same day, versus the rest.
+  function tiltSplit(sorted) {
+    const after = [], normal = [];
+    let day = null, run = 0;
+    for (const t of sorted) {
+      if (t.date !== day) { day = t.date; run = 0; }
+      (run >= 2 ? after : normal).push(t);
+      if (num(t.pnl) < 0) run += 1; else if (num(t.pnl) > 0) run = 0;
+    }
+    return { after, normal };
+  }
+  const groupTable = (rows, label) => (rows.length
+    ? `<table class="ledger"><thead><tr><th>${esc(label)}</th><th class="num">件数</th><th class="num">損益</th><th class="num">勝率</th></tr></thead><tbody>${rows.map((g) => `<tr><td>${esc(g.label)}</td><td class="num">${g.n}</td><td class="num ${tone(g.total)}">${esc(sYen(g.total))}</td><td class="num">${pct(g.wins / g.n)}</td></tr>`).join('')}</tbody></table>`
+    : '<p class="empty">この期間のデータがありません。</p>');
+
+  function renderTrades() {
+    if (!S.loaded.trades) return;
+    $('#tr-journal').hidden = ui.trSub !== 'journal';
+    $('#tr-risk').hidden = ui.trSub !== 'risk';
+    renderRisk();
+    const rb = rangeBounds(ui.trRange, D.today, S.trades);
+    const list = sortTrades(S.trades.filter((t) => t.date && (!rb.from || t.date >= rb.from) && (!rb.to || t.date <= rb.to)));
+    const st = tradeStats(list);
+    const pfText = st.pf === null ? '—' : st.pf === Infinity ? '負けなし' : st.pf.toFixed(2);
+    $('#tr-tiles').innerHTML = [
+      tile(`${rb.label}の損益`, st.n ? sYen(st.total) : '¥0', `${st.n}件・${st.wins}勝${st.losses}敗`, tone(st.total)),
+      tile('勝率', st.n ? pct(st.winRate) : '—', st.n ? `1回あたり平均 ${sYen(st.expectancy)}` : '取引なし'),
+      tile('プロフィットファクター', pfText, '総利益 ÷ 総損失。1を超えると勝ち越し'),
+      tile('平均利益 / 平均損失', st.n ? `${yen(st.avgWin)} / ${yen(st.avgLoss)}` : '—', st.wins && st.losses ? `損益比 ${(st.avgWin / st.avgLoss).toFixed(2)}` : '勝ちと負けがそろうと計算します'),
+      tile('最大ドローダウン', st.maxDD > 0 ? '−' + yen(st.maxDD) : '¥0', st.maxRun ? `最大${st.maxRun}連敗` : '連敗なし', st.maxDD > 0 ? 'loss' : ''),
+    ].join('');
+
+    const ins = [];
+    if (!st.n) ins.push('この期間の取引はまだありません。上でCSVを取り込むか、手で記録してください。');
+    else {
+      if (st.wins && st.losses) {
+        const pr = st.avgWin / st.avgLoss, be = (1 - st.winRate) / st.winRate;
+        ins.push(`勝率${pct(st.winRate)}で収支をプラスにするには、平均利益が平均損失の${be.toFixed(2)}倍以上必要です。今は${pr.toFixed(2)}倍で、${pr >= be ? '条件を満たしています' : '足りていません'}。`);
+      }
+      const { after, normal } = tiltSplit(list);
+      if (after.length >= 3 && normal.length >= 3) {
+        const a = tradeStats(after), b = tradeStats(normal);
+        ins.push(`その日に2連敗したあとの取引は${a.n}件で、勝率${pct(a.winRate)}・平均${sYen(a.expectancy)}。それ以外は勝率${pct(b.winRate)}・平均${sYen(b.expectancy)}。${a.expectancy < b.expectancy ? '連敗のあとに成績が落ちています。2連敗でその日は終える、という決まりが効く可能性があります。' : ''}`);
+      }
+      const kept = list.filter((t) => t.rule === true), broke = list.filter((t) => t.rule === false);
+      if (kept.length && broke.length) ins.push(`ルールを守った取引は${kept.length}件で${sYen(sumPnl(kept))}、破った取引は${broke.length}件で${sYen(sumPnl(broke))}。`);
+      const worst = (rows) => rows.filter((g) => g.n >= 3 && g.total < 0).sort((x, y) => x.total - y.total)[0];
+      const w1 = worst(groupBy(list, (t) => weekdayOf(t.date)));
+      if (w1) ins.push(`いちばん負けている曜日は${WD[w1.key]}曜日（${w1.n}件、${sYen(w1.total)}）。`);
+      const w2 = worst(groupBy(list, (t) => (t.time ? Number(t.time.slice(0, 2)) : null)));
+      if (w2) ins.push(`いちばん負けている時間帯は${w2.key}時台（${w2.n}件、${sYen(w2.total)}）。`);
+      const w3 = worst(groupBy(list, (t) => t.name || t.code || null));
+      if (w3) ins.push(`いちばん負けている銘柄は${w3.key}（${w3.n}件、${sYen(w3.total)}）。`);
+      if (st.maxDD > 0) ins.push(`この期間の最大ドローダウン（損益の山からの落ち込み）は${yen(st.maxDD)}です。`);
+    }
+    $('#tr-insights').innerHTML = ins.map((s) => `<li>${esc(s)}</li>`).join('');
+
+    $('#tr-by-wd').innerHTML = groupTable(groupBy(list, (t) => weekdayOf(t.date)).sort((a, b) => a.key - b.key).map((g) => ({ ...g, label: WD[g.key] + '曜日' })), '曜日');
+    const hours = groupBy(list, (t) => (t.time ? Number(t.time.slice(0, 2)) : null)).sort((a, b) => a.key - b.key).map((g) => ({ ...g, label: `${g.key}時台` }));
+    $('#tr-by-hour').innerHTML = hours.length ? groupTable(hours, '時間帯') : '<p class="empty">時刻のある取引がありません。手で記録するときに時刻を入れると、時間帯ごとに集計します。</p>';
+    $('#tr-by-code').innerHTML = groupTable(groupBy(list, (t) => t.name || t.code || '銘柄不明').sort((a, b) => a.total - b.total).slice(0, 10).map((g) => ({ ...g, label: g.key })), '銘柄（損益の低い順）');
+    const tagRows = groupBy(list, (t) => t.tag || null).map((g) => ({ ...g, label: g.key }))
+      .concat(groupBy(list, (t) => (t.rule === true ? 'ルールを守った' : t.rule === false ? 'ルールを破った' : null)).map((g) => ({ ...g, label: g.key })));
+    $('#tr-by-tag').innerHTML = tagRows.length ? groupTable(tagRows, '手法・ルール') : '<p class="empty">手で記録するときに手法とルールの守り具合を選ぶと、ここで比べられます。</p>';
+
+    const latest = [...list].reverse().slice(0, 150);
+    $('#tr-list').innerHTML = latest.length ? latest.map((t) => {
+      const sub = [t.qty ? `${fmtN(t.qty)}株` : '', has(t.entry) && has(t.exit) ? `${t.entry} → ${t.exit}` : has(t.exit) ? `約定 ${t.exit}` : '', t.tag || '', t.source === 'csv' ? 'CSV' : '', t.note || ''].filter(Boolean).join('・');
+      return `<li class="entry">
+        <div class="e-main"><span class="e-date">${esc(mdw(t.date))}${t.time ? ' ' + esc(t.time) : ''}</span><span class="e-label">${esc(t.name || t.code || '銘柄不明')}</span><span class="chip">${t.dir === 'short' ? '売→買' : '買→売'}</span>${t.rule === false ? '<span class="chip warn">ルール違反</span>' : ''}</div>
+        <div class="e-amt ${tone(num(t.pnl))}">${esc(sYen(num(t.pnl)))}</div>
+        <button type="button" class="icon-btn" data-del-trade="${esc(t.id)}" aria-label="${esc(md(t.date) + 'の取引を削除')}">×</button>
+        ${sub ? `<div class="e-sub">${esc(sub)}</div>` : ''}
+      </li>`;
+    }).join('') : '<li class="empty">この期間の取引はありません。</li>';
+    if (ui.view === 'trades' && ui.trSub === 'journal') renderEquity(list, rb);
+  }
+
+  let trW = 0, lastEqArgs = null;
+  function renderEquity(list, rb) {
+    lastEqArgs = [list, rb];
+    const host = $('#tr-chart'), tableBox = $('#tr-chart-table');
+    const W = Math.round(host.clientWidth);
+    if (!W) return;
+    trW = W;
+    const days = new Map();
+    for (const t of list) { const g = days.get(t.date) || { date: t.date, pnl: 0, n: 0 }; g.pnl += num(t.pnl); g.n += 1; days.set(t.date, g); }
+    const data = [...days.values()].sort((a, b) => a.date.localeCompare(b.date));
+    if (!data.length) { host.innerHTML = emptyChart('この期間の取引はありません。'); tableBox.innerHTML = ''; return; }
+    let cum = 0;
+    for (const d of data) { cum += d.pnl; d.cum = cum; }
+    const H = 220, ml = 48, mr = 14, mt = 18, mb = 26, pw = W - ml - mr, ph = H - mt - mb;
+    const maxV = Math.max(0, ...data.map((d) => d.cum)), minV = Math.min(0, ...data.map((d) => d.cum));
+    const step = niceStep(Math.max(maxV - minV, 1000), 4);
+    const top = Math.ceil(maxV / step) * step, bot = Math.floor(minV / step) * step, span = (top - bot) || step;
+    const y = (v) => mt + ((top - v) / span) * ph;
+    const x = (i) => ml + (data.length === 1 ? pw / 2 : (i / (data.length - 1)) * pw);
+    const ref = Math.max(Math.abs(top), Math.abs(bot));
+    let ax = '';
+    for (let v = bot; v <= top + 1e-6; v += step) ax += `<line class="${Math.abs(v) < 1e-6 ? 'baseline' : 'gridline'}" x1="${ml}" x2="${W - mr}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text x="${ml - 6}" y="${f1(y(v) + 4)}" text-anchor="end">${axisYen(v, ref)}</text>`;
+    ax += `<text x="${f1(x(0))}" y="${H - 8}" text-anchor="${data.length === 1 ? 'middle' : 'start'}">${md(data[0].date)}</text>`;
+    if (data.length > 1) ax += `<text x="${f1(x(data.length - 1))}" y="${H - 8}" text-anchor="end">${md(data[data.length - 1].date)}</text>`;
+    const pts = data.map((d, i) => `${f1(x(i))},${f1(y(d.cum))}`);
+    const last = data[data.length - 1], lx = x(data.length - 1), ly = y(last.cum);
+    const labelY = ly - 10 < 10 ? ly + 18 : ly - 10;
+    host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="${esc(rb.label)}の損益の積み上がり"><g class="ax">${ax}</g><path d="M${f1(x(0))},${f1(y(0))}L${pts.join('L')}L${f1(lx)},${f1(y(0))}Z" style="fill:var(--pos);opacity:0.1"/><path class="line" d="M${pts.join('L')}" style="stroke:var(--pos)"/><circle class="dot" cx="${f1(lx)}" cy="${f1(ly)}" r="4" style="fill:var(--pos)"/><text class="val-label" x="${f1(lx)}" y="${f1(labelY)}" text-anchor="end">${esc(sYen(last.cum))}</text><line class="cross" x1="0" x2="0" y1="${mt}" y2="${mt + ph}" visibility="hidden"/><rect class="overlay" x="${ml}" y="${mt}" width="${pw}" height="${ph}" fill="transparent"/></svg><div class="tooltip" hidden></div>`;
+    const svg = host.querySelector('svg'), cross = svg.querySelector('.cross'), tip = host.querySelector('.tooltip'), ov = svg.querySelector('.overlay');
+    let cur = data.length - 1;
+    const showAt = (i) => {
+      cur = Math.max(0, Math.min(data.length - 1, i));
+      const d = data[cur], cx = x(cur);
+      cross.setAttribute('x1', f1(cx)); cross.setAttribute('x2', f1(cx)); cross.setAttribute('visibility', 'visible');
+      tip.innerHTML = `<div class="tt-date">${esc(mdw(d.date))}</div><div class="tt-row"><span class="tt-name">その日</span><b class="${tone(d.pnl)}">${esc(sYen(d.pnl))}</b></div><div class="tt-row"><span class="tt-name">累計</span><b>${esc(sYen(d.cum))}</b></div><div class="tt-row"><span class="tt-name">件数</span><b>${d.n}件</b></div>`;
+      tip.hidden = false;
+      const scale = svg.getBoundingClientRect().width / W || 1, px = cx * scale, tw = tip.offsetWidth;
+      let left = px + 12; if (left + tw > host.clientWidth) left = px - tw - 12; if (left < 0) left = 0;
+      tip.style.left = left + 'px'; tip.style.top = (mt * scale) + 'px';
+    };
+    const hide = () => { cross.setAttribute('visibility', 'hidden'); tip.hidden = true; };
+    const move = (e) => { const rect = svg.getBoundingClientRect(); const px = ((e.clientX - rect.left) / rect.width) * W; showAt(data.length === 1 ? 0 : Math.round(((px - ml) / pw) * (data.length - 1))); };
+    ov.addEventListener('pointermove', move); ov.addEventListener('pointerdown', move); ov.addEventListener('pointerleave', hide);
+    host.onkeydown = (e) => { if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault(); showAt(cur + (e.key === 'ArrowRight' ? 1 : -1)); };
+    host.onfocus = () => showAt(cur); host.onblur = hide;
+    tableBox.innerHTML = `<table class="ledger"><thead><tr><th>日付</th><th class="num">その日</th><th class="num">件数</th><th class="num">累計</th></tr></thead><tbody>${[...data].reverse().map((d) => `<tr><td>${esc(mdw(d.date))}</td><td class="num ${tone(d.pnl)}">${esc(sYen(d.pnl))}</td><td class="num">${d.n}</td><td class="num ${tone(d.cum)}">${esc(sYen(d.cum))}</td></tr>`).join('')}</tbody></table>`;
+  }
+
+  /* ---------- CSV import ---------- */
+  const imp = { rows: null, header: null, hIdx: -1, map: null, name: '', ready: [] };
+  const COLS = [
+    ['date', ['約定日', '約定日付', '取引日', '受渡日', '日付']],
+    ['time', ['約定時刻', '約定時間', '時刻']],
+    ['code', ['銘柄コード', 'コード', 'ｺｰﾄﾞ']],
+    ['name', ['銘柄名', '銘柄']],
+    ['side', ['取引', '売買', '取引区分', '売買区分']],
+    ['qty', ['約定数量', '数量', '株数']],
+    ['price', ['約定単価', '単価', '約定価格']],
+    ['fee', ['手数料/諸経費等', '手数料']],
+    ['tax', ['税額']],
+    ['amount', ['受渡金額/決済損益', '受渡金額', '約定代金']],
+    ['pnl', ['実現損益', '損益金額', '譲渡損益', '損益']],
+  ];
+  function decodeText(buf) {
+    let text = new TextDecoder('utf-8').decode(buf);
+    if (text.includes('�')) { try { text = new TextDecoder('shift_jis').decode(buf); } catch (e) { /* keep utf-8 */ } }
+    return text.replace(/^﻿/, '');
+  }
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], c = '', q = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (q) { if (ch === '"') { if (text[i + 1] === '"') { c += '"'; i++; } else q = false; } else c += ch; }
+      else if (ch === '"') q = true;
+      else if (ch === ',') { row.push(c); c = ''; }
+      else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(c); rows.push(row); row = []; c = ''; }
+      else c += ch;
+    }
+    if (c !== '' || row.length) { row.push(c); rows.push(row); }
+    return rows.map((r) => r.map((x) => x.trim()));
+  }
+  function findHeader(rows) {
+    for (let i = 0; i < Math.min(rows.length, 40); i++) {
+      const t = rows[i].join('|');
+      const hits = [/約定日|取引日|日付/, /銘柄/, /数量|株数/, /損益|受渡金額|取引|売買/].filter((re) => re.test(t)).length;
+      if (hits >= 3) return i;
+    }
+    return -1;
+  }
+  function autoMap(header) {
+    const H = header.map((h) => String(h).replace(/\s/g, ''));
+    const used = new Set(), map = {};
+    for (const [k, names] of COLS) {
+      let idx = H.findIndex((h, i) => !used.has(i) && names.includes(h));
+      if (idx < 0) idx = H.findIndex((h, i) => !used.has(i) && names.some((n) => h.includes(n)));
+      map[k] = idx;
+      if (idx >= 0 && k !== 'amount') used.add(idx);
+    }
+    if (map.pnl >= 0 && /受渡/.test(H[map.pnl])) { map.amount = map.pnl; map.pnl = -1; }
+    if (map.date >= 0 && /受渡日/.test(H[map.date])) { const yk = H.findIndex((h) => /約定日/.test(h)); if (yk >= 0) map.date = yk; }
+    return map;
+  }
+  function normDate(v) {
+    const s = toHalf(String(v || '').trim());
+    let m = s.match(/^(\d{4})[/\-.年](\d{1,2})[/\-.月](\d{1,2})/);
+    if (m) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+    m = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    m = s.match(/^(\d{2})[/\-.](\d{1,2})[/\-.](\d{1,2})$/);
+    if (m) return `20${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+    return null;
+  }
+  function normTime(v) { const m = toHalf(String(v || '')).match(/(\d{1,2}):(\d{2})/); return m ? `${pad(+m[1])}:${m[2]}` : ''; }
+  function fnv(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); }
+  // 約定履歴: 信用の返済行は決済損益をそのまま、現物は買いを先入先出で売りに対応させて損益を出す。
+  function convert(rows, hIdx, map) {
+    const header = rows[hIdx] || [];
+    const combined = map.amount >= 0 && /受渡/.test(header[map.amount] || '') && /損益/.test(header[map.amount] || '');
+    const data = [];
+    rows.slice(hIdx + 1).forEach((r, i) => { const date = normDate(cell(r, map.date)); if (date) data.push({ r, i, date }); });
+    const newestFirst = data.length > 1 && data[0].date > data[data.length - 1].date;
+    const isBuyOpen = (side) => /買/.test(side) && !/返|決済/.test(side);
+    data.sort((a, b) => a.date.localeCompare(b.date) || (isBuyOpen(cell(b.r, map.side)) - isBuyOpen(cell(a.r, map.side))) || (newestFirst ? b.i - a.i : a.i - b.i));
+    const lots = new Map(), out = [], seen = new Map();
+    const cnt = { pnlcol: 0, margin: 0, cash: 0, unmatched: 0, skipped: 0 };
+    let seq = 0;
+    for (const { r, date } of data) {
+      const side = cell(r, map.side), name = cell(r, map.name), codeRaw = cell(r, map.code);
+      const code = (codeRaw.match(/[0-9]{3}[0-9A-Z]/) || name.match(/[0-9]{3}[0-9A-Z]/) || [''])[0];
+      const qty = Math.abs(parseSigned(cell(r, map.qty))) || 0;
+      const price = parseSigned(cell(r, map.price));
+      const fee = (parseSigned(cell(r, map.fee)) || 0) + (parseSigned(cell(r, map.tax)) || 0);
+      let pnl = null, kind = '', dir = /売/.test(side) ? 'long' : /買/.test(side) ? 'short' : 'long';
+      if (map.pnl >= 0) {
+        const v = parseSigned(cell(r, map.pnl));
+        if (Number.isFinite(v)) { pnl = v; kind = 'pnlcol'; }
+      } else if (/返|決済/.test(side)) {
+        const v = parseSigned(cell(r, map.amount));
+        if (Number.isFinite(v) && combined) { pnl = v; kind = 'margin'; }
+      } else if (/現物|^現[買売]/.test(side) || (/[買売]/.test(side) && !/信用|新規|信新/.test(side))) {
+        const amt = parseSigned(cell(r, map.amount));
+        const key = code || name;
+        if (/買/.test(side)) {
+          const cost = Number.isFinite(amt) && amt > 0 ? amt : qty * (price || 0) + fee;
+          if (!lots.has(key)) lots.set(key, []);
+          if (qty > 0) lots.get(key).push({ qty, unit: cost / qty });
+          continue;
+        }
+        const proceeds = Number.isFinite(amt) && amt > 0 ? amt : qty * (price || 0) - fee;
+        let need = qty, cost = 0;
+        const q = lots.get(key) || [];
+        while (need > 0 && q.length) { const lot = q[0], take = Math.min(lot.qty, need); cost += take * lot.unit; lot.qty -= take; need -= take; if (lot.qty <= 0) q.shift(); }
+        if (need > 0 || qty <= 0) { cnt.unmatched += 1; continue; }
+        pnl = Math.round(proceeds - cost); kind = 'cash'; dir = 'long';
+      }
+      if (pnl === null) { cnt.skipped += 1; continue; }
+      cnt[kind] += 1;
+      const base = [date, code, name, side, qty, price, pnl].join('|');
+      const occ = (seen.get(base) || 0) + 1;
+      seen.set(base, occ);
+      seq += 1;
+      out.push({ id: `csv-${fnv(base)}-${occ}`, date, time: normTime(cell(r, map.time)), code, name: name.slice(0, 40), dir, qty, entry: null, exit: Number.isFinite(price) ? price : null, fee: fee || 0, pnl: Math.round(pnl), rule: null, tag: '', note: '', source: 'csv', seq, createdAt: Date.now() });
+    }
+    return { trades: out, cnt };
+  }
+  const MAP_FIELDS = [['date', '約定日（必須）'], ['name', '銘柄名'], ['code', '銘柄コード'], ['side', '取引（売買の区分）'], ['qty', '数量'], ['price', '単価'], ['amount', '受渡金額・決済損益'], ['pnl', '損益（実現損益の列）'], ['time', '時刻']];
+  function renderImport() {
+    const box = $('#tr-import');
+    if (!imp.rows) { box.innerHTML = ''; return; }
+    const opts = (sel) => '<option value="-1">（使わない）</option>' + imp.header.map((h, i) => `<option value="${i}"${i === sel ? ' selected' : ''}>${esc(h || `列${i + 1}`)}</option>`).join('');
+    const res = convert(imp.rows, imp.hIdx, imp.map);
+    const existing = new Set(S.trades.map((t) => t.id));
+    imp.ready = res.trades.filter((t) => !existing.has(t.id));
+    const n = imp.ready.length;
+    box.innerHTML = `<p class="small"><b>${esc(imp.name)}</b>：${imp.hIdx + 1}行目を見出しとして読みました。列の割り当てが違っていたら直してください。</p>
+      <details${res.trades.length ? '' : ' open'}><summary>列の割り当て</summary><div class="form-grid map-grid">${MAP_FIELDS.map(([k, label]) => `<div class="field"><label for="tr-map-${k}">${esc(label)}</label><select id="tr-map-${k}" data-map="${k}">${opts(imp.map[k])}</select></div>`).join('')}</div></details>
+      <p>損益が確定した取引 <b>${res.trades.length}件</b>${res.trades.length ? `（信用の返済 ${res.cnt.margin}・現物の売り ${res.cnt.cash}・損益の列 ${res.cnt.pnlcol}）` : ''}。うち新しいもの <b>${n}件</b>。</p>
+      ${res.cnt.unmatched ? `<p class="hint">買いが見つからない現物の売りが${res.cnt.unmatched}件あり、取り込みません（CSVの期間より前に買った株など）。</p>` : ''}
+      ${res.cnt.skipped ? `<p class="hint">信用の新規建てや投資信託など、損益が確定しない行が${res.cnt.skipped}行ありました。</p>` : ''}
+      ${n ? `<div class="table-scroll"><table class="ledger"><thead><tr><th>日付</th><th>銘柄</th><th class="num">数量</th><th class="num">損益</th></tr></thead><tbody>${imp.ready.slice(0, 8).map((t) => `<tr><td>${esc(md(t.date))}</td><td>${esc(t.name || t.code || '—')}</td><td class="num">${t.qty ? fmtN(t.qty) : '—'}</td><td class="num ${tone(t.pnl)}">${esc(sYen(t.pnl))}</td></tr>`).join('')}</tbody></table></div>${n > 8 ? `<p class="hint">ほか${n - 8}件</p>` : ''}` : ''}
+      <div class="actions"><button type="button" class="btn" id="tr-import-go"${n ? '' : ' disabled'}>${n ? `${n}件を取り込む` : '新しく取り込む取引はありません'}</button><button type="button" class="btn ghost" id="tr-import-cancel">やめる</button></div>`;
+  }
+  async function importTrades() {
+    const list = imp.ready.slice();
+    if (!list.length) return;
+    const btn = $('#tr-import-go');
+    btn.disabled = true;
+    const total = list.length;
+    let done = 0;
+    const worker = async () => { while (list.length) { const t = list.shift(); const { id, ...data } = t; await STORE.set('trades/' + id, data); done += 1; btn.textContent = `取り込み中 ${done}/${total}`; } };
+    const ok = await write(() => Promise.all([worker(), worker(), worker()]), `${total}件を取り込みました`);
+    if (ok) { imp.rows = null; $('#tr-file').value = ''; renderImport(); }
+    else { btn.disabled = false; btn.textContent = 'もう一度取り込む'; }
+  }
+
+  /* ---------- 発注前の計算 ---------- */
+  // 呼値の単位（JPX）：[上限価格, TOPIX500構成銘柄, その他の銘柄]
+  const TICK = [[1000, 0.1, 1], [3000, 0.5, 1], [5000, 1, 5], [10000, 1, 10], [30000, 5, 10], [50000, 10, 50], [100000, 10, 100], [300000, 50, 100], [500000, 100, 500], [1000000, 100, 1000], [3000000, 500, 1000], [5000000, 1000, 5000], [10000000, 1000, 10000], [30000000, 5000, 10000], [50000000, 10000, 50000], [Infinity, 10000, 100000]];
+  const tickOf = (price, topix) => { const row = TICK.find((r) => price <= r[0]); return topix ? row[1] : row[2]; };
+  const onTick = (price, tick) => Math.abs(price / tick - Math.round(price / tick)) < 1e-6;
+  function roundTick(price, tick, mode) { const k = price / tick; const n = mode === 'down' ? Math.floor(k + 1e-9) : mode === 'up' ? Math.ceil(k - 1e-9) : Math.round(k); return Math.round(n * tick * 10) / 10; }
+  const fmtP = (p) => (Number.isInteger(p) ? Math.round(p).toLocaleString('ja-JP') : p.toFixed(1));
+  let riskDirty = false;
+  function riskSettings() {
+    const g = (id, dflt) => { const v = parseYen($('#' + id).value); return v > 0 ? v : dflt; };
+    return { dailyLoss: g('rk-daily-loss', 15000), dailyCount: g('rk-daily-count', 10), perTrade: g('rk-per-trade', 5000) };
+  }
+  function renderRisk() {
+    if (!riskDirty) {
+      const r = S.risk || {};
+      $('#rk-daily-loss').value = String(has(r.dailyLoss) ? num(r.dailyLoss) : 15000);
+      $('#rk-daily-count').value = String(has(r.dailyCount) ? num(r.dailyCount) : 10);
+      $('#rk-per-trade').value = String(has(r.perTrade) ? num(r.perTrade) : 5000);
+    }
+    const rs = riskSettings();
+    const tdy = S.trades.filter((t) => t.date === D.today);
+    const pnl = sumPnl(tdy), n = tdy.length;
+    const lossUsed = Math.max(0, -pnl);
+    const remainLoss = Math.max(0, rs.dailyLoss - lossUsed), remainN = Math.max(0, rs.dailyCount - n);
+    let chip;
+    if (lossUsed >= rs.dailyLoss) chip = '<span class="chip crit">■ 損失の上限に到達。今日はここで終了</span>';
+    else if (n >= rs.dailyCount) chip = '<span class="chip crit">■ 回数の上限に到達。今日はここで終了</span>';
+    else if (lossUsed >= rs.dailyLoss * 0.7) chip = '<span class="chip warn">▲ 損失の上限まで残りわずか</span>';
+    else chip = '<span class="chip good">● 上限の内側</span>';
+    const ratio = rs.dailyLoss > 0 ? Math.min(1, lossUsed / rs.dailyLoss) : 0;
+    const fill = ratio >= 1 ? 'var(--neg)' : ratio >= 0.7 ? 'var(--warn-fill)' : 'var(--accent)';
+    $('#rk-today').innerHTML = `<div class="meter-head"><span class="m-name">今日（${esc(mdw(D.today))}）<span class="${tone(pnl)}"> ${esc(sYen(pnl))}</span>・${n}回</span>${chip}</div>
+      <div class="meter" role="img" aria-label="${esc(`今日の損失 ${yen(lossUsed)} / 上限 ${yen(rs.dailyLoss)}`)}" style="margin-top:8px"><span class="fill" style="width:${(ratio * 100).toFixed(1)}%;background:${fill}"></span></div>
+      <div class="meter-foot" style="margin-top:6px"><span>損失 ${esc(yen(lossUsed))} / 上限 ${esc(yen(rs.dailyLoss))}</span><span>残り ${esc(yen(remainLoss))}・あと${remainN}回</span></div>
+      ${S.risk ? '' : '<p class="hint">上限はまだ仮の値です。下で自分の上限を決めて保存してください。</p>'}`;
+    renderRiskCalc(rs, remainLoss, n >= rs.dailyCount);
+  }
+  function renderRiskCalc(rs, remainLoss, countOver) {
+    const out = $('#rk-result');
+    const dir = radioVal('rk-dir') || 'long';
+    const entry = parsePrice($('#rk-entry').value), stop = parsePrice($('#rk-stop').value);
+    const topix = $('#rk-topix').checked;
+    const bp = parseYen($('#rk-bp').value);
+    if (!(entry > 0) || !(stop > 0)) { out.innerHTML = '<p class="empty">エントリー価格と損切り価格を入れると、持てる株数・損切りしたときの損失・利確の目安を出します。</p>'; return; }
+    if (dir === 'long' ? stop >= entry : stop <= entry) { out.innerHTML = `<p class="form-error">${dir === 'long' ? '買いの損切り価格は、エントリー価格より下にしてください。' : '売りの損切り価格は、エントリー価格より上にしてください。'}</p>`; return; }
+    const tickE = tickOf(entry, topix), tickS = tickOf(stop, topix);
+    const warns = [];
+    if (!onTick(entry, tickE)) warns.push(`エントリー価格が呼値（${tickE}円刻み）に合っていません。注文できるのは ${fmtP(roundTick(entry, tickE, 'down'))}円 か ${fmtP(roundTick(entry, tickE, 'up'))}円です。`);
+    if (!onTick(stop, tickS)) warns.push(`損切り価格が呼値（${tickS}円刻み）に合っていません。注文できるのは ${fmtP(roundTick(stop, tickS, 'down'))}円 か ${fmtP(roundTick(stop, tickS, 'up'))}円です。`);
+    const width = Math.abs(entry - stop);
+    const allow = Math.min(rs.perTrade, remainLoss);
+    const head = warns.map((w) => `<p class="banner">${esc(w)}</p>`).join('');
+    if (countOver) { out.innerHTML = head + '<p class="form-error">今日の取引回数の上限に達しているため、新しい注文は出さない計算です。</p>'; return; }
+    if (allow <= 0) { out.innerHTML = head + '<p class="form-error">今日の損失の上限に達しているため、新しい注文は出さない計算です。</p>'; return; }
+    let shares = Math.floor(allow / width / 100) * 100;
+    let capNote = '';
+    if (bp > 0) { const cap = Math.floor(bp / entry / 100) * 100; if (cap < shares) { shares = cap; capNote = '買付余力で制限'; } }
+    if (shares <= 0) { out.innerHTML = head + `<p class="form-error">許容損失${esc(yen(allow))}では足りません。100株でも損切り幅${esc(fmtP(width))}円で${esc(yen(width * 100))}の損失になります。損切りを近くするか、値幅の小さい銘柄にしてください。</p>`; return; }
+    const sgn = dir === 'long' ? 1 : -1;
+    const targets = [1, 2, 3].map((k) => { const raw = entry + sgn * k * width; return roundTick(raw, tickOf(raw, topix), dir === 'long' ? 'down' : 'up'); });
+    out.innerHTML = `${head}<dl class="compare">
+      <div><dt>持てる株数</dt><dd><b class="big-num">${fmtN(shares)}株</b>${capNote ? `（${esc(capNote)}）` : ''}</dd></div>
+      <div><dt>損切りしたときの損失</dt><dd class="loss">−${esc(yen(shares * width))}（許容 ${esc(yen(allow))}${allow < rs.perTrade ? '・今日の残りで制限' : ''}）</dd></div>
+      <div><dt>損切り幅</dt><dd>${esc(fmtP(width))}円（${Math.round(width / tickE)}ティック）</dd></div>
+      <div><dt>必要な資金</dt><dd>${esc(yen(shares * entry))}</dd></div>
+      <div><dt>利確の目安</dt><dd>1R ${esc(fmtP(targets[0]))}円・2R ${esc(fmtP(targets[1]))}円・3R ${esc(fmtP(targets[2]))}円</dd></div>
+    </dl><p class="hint">手数料・信用の金利や貸株料は含みません。呼値はJPXの表（TOPIX500構成銘柄とそれ以外）にもとづきます。構成銘柄は入れ替わるので、銘柄ごとに確認してください。</p>`;
+  }
+
+  function tradesCsv() {
+    const lines = [['日付', '時刻', '銘柄コード', '銘柄', '方向', '株数', 'エントリー', '決済', '手数料など', '損益', 'ルール', '手法', 'メモ', '入力'].join(',')];
+    for (const t of sortTrades(S.trades)) lines.push([t.date, t.time || '', t.code || '', csvCell(t.name || '', true), t.dir === 'short' ? '売→買' : '買→売', num(t.qty) || '', has(t.entry) ? t.entry : '', has(t.exit) ? t.exit : '', num(t.fee), num(t.pnl), t.rule === true ? '守った' : t.rule === false ? '破った' : '', csvCell(t.tag || '', true), csvCell(t.note || '', true), t.source === 'csv' ? 'CSV' : '手入力'].join(','));
+    return lines.join('\r\n') + '\r\n';
+  }
+
+  function manualTrade() {
+    const qty = parseYen($('#tr-qty').value), en = parsePrice($('#tr-entry').value), ex = parsePrice($('#tr-exit').value);
+    const feeRaw = $('#tr-fee').value.trim(), fee = feeRaw ? parseYen(feeRaw) : 0;
+    if (!(qty > 0) || !(en > 0) || !(ex > 0) || !(fee >= 0)) return null;
+    const dir = radioVal('tr-dir') || 'long';
+    return { qty, en, ex, fee, dir, pnl: Math.round((ex - en) * qty * (dir === 'long' ? 1 : -1) - fee) };
+  }
+  function initTrades() {
+    $('#tr-tag').innerHTML = '<option value="">選ばない</option>' + TAGS.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+    $('#tr-date').value = todayStr();
+    document.querySelectorAll('input[name="tr-sub"]').forEach((r) => r.addEventListener('change', () => { ui.trSub = radioVal('tr-sub'); renderTrades(); }));
+    document.querySelectorAll('input[name="tr-range"]').forEach((r) => r.addEventListener('change', () => { ui.trRange = radioVal('tr-range'); renderTrades(); }));
+    $('#tr-file').addEventListener('change', async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      if (f.size > 8 * 1024 * 1024) { toast('ファイルが大きすぎます（8MBまで）'); return; }
+      const rows = parseCsv(decodeText(await f.arrayBuffer()));
+      const hIdx = findHeader(rows);
+      if (hIdx < 0) { imp.rows = null; $('#tr-import').innerHTML = '<p class="form-error">見出しの行（約定日・銘柄・数量など）が見つかりませんでした。SBI証券の約定履歴か実現損益のCSVか確認してください。</p>'; return; }
+      Object.assign(imp, { rows, hIdx, header: rows[hIdx], map: autoMap(rows[hIdx]), name: f.name });
+      renderImport();
+    });
+    $('#tr-import').addEventListener('change', (e) => { const k = e.target.dataset && e.target.dataset.map; if (k) { imp.map[k] = Number(e.target.value); renderImport(); } });
+    $('#tr-import').addEventListener('click', (e) => {
+      if (e.target.closest('#tr-import-go')) importTrades();
+      if (e.target.closest('#tr-import-cancel')) { imp.rows = null; $('#tr-file').value = ''; renderImport(); }
+    });
+    const preview = () => { const m = manualTrade(); $('#tr-preview').textContent = m ? `損益 ${sYen(m.pnl)}` : ''; $('#tr-preview').className = 'preview span ' + (m ? tone(m.pnl) : ''); };
+    ['tr-qty', 'tr-entry', 'tr-exit', 'tr-fee'].forEach((id) => $('#' + id).addEventListener('input', preview));
+    document.querySelectorAll('input[name="tr-dir"]').forEach((r) => r.addEventListener('change', preview));
+    $('#tr-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideErr('tr');
+      const name = $('#tr-name').value.trim();
+      if (!name) return showErr('tr', '銘柄を入れてください（名前かコード）。');
+      const m = manualTrade();
+      if (!m) return showErr('tr', '株数・エントリー価格・決済価格を数字で入れてください。');
+      const code = (toHalf(name).match(/[0-9]{3}[0-9A-Z]/) || [''])[0];
+      const data = { date: $('#tr-date').value || todayStr(), time: $('#tr-time').value || '', code, name: name.slice(0, 40), dir: m.dir, qty: m.qty, entry: m.en, exit: m.ex, fee: m.fee, pnl: m.pnl, rule: radioVal('tr-rule') !== 'no', tag: $('#tr-tag').value, note: $('#tr-note').value.trim().slice(0, 200), source: 'manual', seq: Date.now(), createdAt: Date.now() };
+      const ok = await write(() => STORE.add('trades', data), `記録しました（${name} ${sYen(m.pnl)}）`);
+      if (ok) { ['tr-entry', 'tr-exit', 'tr-fee', 'tr-note', 'tr-time'].forEach((id) => { $('#' + id).value = ''; }); setRadio('tr-rule', 'yes'); preview(); }
+    });
+    document.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-del-trade]');
+      if (!b) return;
+      const t = S.trades.find((x) => x.id === b.dataset.delTrade);
+      if (!t) return;
+      if (await confirmBox(`${jpDate(t.date)}の取引（${t.name || t.code || '銘柄不明'} ${sYen(num(t.pnl))}）を削除します。`)) await write(() => STORE.remove('trades/' + t.id), '削除しました');
+    });
+    ['rk-daily-loss', 'rk-daily-count', 'rk-per-trade'].forEach((id) => $('#' + id).addEventListener('input', () => { riskDirty = true; if (D) renderRisk(); }));
+    ['rk-entry', 'rk-stop', 'rk-bp'].forEach((id) => $('#' + id).addEventListener('input', () => { if (D) renderRisk(); }));
+    $('#rk-topix').addEventListener('change', () => { if (D) renderRisk(); });
+    document.querySelectorAll('input[name="rk-dir"]').forEach((r) => r.addEventListener('change', () => { if (D) renderRisk(); }));
+    $('#rk-save').addEventListener('click', async () => {
+      const v = ['rk-daily-loss', 'rk-daily-count', 'rk-per-trade'].map((id) => parseYen($('#' + id).value));
+      if (v.some((x) => !(x > 0))) { toast('上限は1以上の数字で入れてください'); return; }
+      const ok = await write(() => STORE.set('meta/risk', { dailyLoss: v[0], dailyCount: v[1], perTrade: v[2], updatedAt: Date.now() }), '上限を保存しました');
+      if (ok) riskDirty = false;
+    });
+    $('#exp-trades').addEventListener('click', () => exportCsv('trades'));
+  }
+
   /* ===================== routing ===================== */
   function route() {
-    const h = (location.hash || '').replace('#', '');
+    let h = (location.hash || '').replace('#', '');
+    let scrollTo = null;
+    if (h === 'bonus') { h = 'debts'; scrollTo = 'bonus-panel'; }
+    if (h === 'risk' || h === 'journal') { ui.trSub = h; setRadio('tr-sub', h); h = 'trades'; }
     ui.view = VIEWS.includes(h) ? h : 'overview';
     for (const v of VIEWS) {
       $('#view-' + v).hidden = v !== ui.view;
       const t = $('#tab-' + v); t.setAttribute('aria-selected', String(v === ui.view)); t.tabIndex = v === ui.view ? 0 : -1;
     }
+    $('#view-bonus').hidden = ui.view !== 'debts';
+    $('#tr-journal').hidden = ui.trSub !== 'journal';
+    $('#tr-risk').hidden = ui.trSub !== 'risk';
+    if (scrollTo) setTimeout(() => { const el = document.getElementById(scrollTo); if (el) el.scrollIntoView({ block: 'start' }); }, 80);
     if (D) schedule();
   }
   function go(v) { if (location.hash !== '#' + v) location.hash = v; else route(); }
@@ -1386,7 +1969,13 @@ dialog::backdrop { background: var(--overlay); }
 
     document.addEventListener('click', async (e) => {
       const goBtn = e.target.closest('[data-go]');
-      if (goBtn) { go(goBtn.dataset.go); const fid = goBtn.dataset.focus; if (fid) setTimeout(() => { const el = document.getElementById(fid); if (el && !el.closest('[hidden]')) el.focus(); }, 80); return; }
+      if (goBtn) {
+        if (goBtn.dataset.go === 'trades' && goBtn.dataset.focus) { ui.trSub = 'journal'; setRadio('tr-sub', 'journal'); }
+        go(goBtn.dataset.go);
+        const fid = goBtn.dataset.focus;
+        if (fid) setTimeout(() => { const el = document.getElementById(fid); if (el) { const det = el.closest('details'); if (det) det.open = true; if (!el.closest('[hidden]')) el.focus(); } }, 80);
+        return;
+      }
       const ed = e.target.closest('[data-edit]');
       if (ed) { openDebtDialog(ed.dataset.edit); return; }
       const dp = e.target.closest('[data-del-pay]');
@@ -1525,19 +2114,22 @@ dialog::backdrop { background: var(--overlay); }
       const dump = LOCAL.dump(), n = LOCAL.count();
       if (!(await confirmBox(`この端末に一時保存した${n}件をクラウドに移します。`, '移す', false))) return;
       const ok = await write(async () => {
-        for (const col of ['debts', 'payments', 'pnl']) for (const [id, data] of Object.entries(dump[col] || {})) await STORE.set(`${col}/${id}`, data);
+        for (const col of ['debts', 'payments', 'pnl', 'trades']) for (const [id, data] of Object.entries(dump[col] || {})) await STORE.set(`${col}/${id}`, data);
+        if (dump.meta && dump.meta.risk && !S.risk) await STORE.set('meta/risk', dump.meta.risk);
         if (dump.meta && dump.meta.bonus && !S.bonus) await STORE.set('meta/bonus', dump.meta.bonus);
       }, 'クラウドに移しました');
       if (ok) { LOCAL.clear(); renderData(); }
     });
     $('#wipe').addEventListener('click', async () => {
       if (!(await confirmBox('借入・返済・特別損益・ボーナス配分の記録をすべて削除します。元に戻せません。', 'すべて削除'))) return;
-      const pays = [...S.payments], pnl = [...S.pnl], debts = [...S.debts];
+      const pays = [...S.payments], pnl = [...S.pnl], debts = [...S.debts], trades = [...S.trades];
       await write(async () => {
         for (const p of pays) await STORE.remove('payments/' + p.id);
         for (const x of pnl) await STORE.remove('pnl/' + x.id);
+        for (const t of trades) await STORE.remove('trades/' + t.id);
         for (const d of debts) await STORE.remove('debts/' + d.id);
         await STORE.remove('meta/bonus');
+        await STORE.remove('meta/risk');
       }, 'すべて削除しました');
     });
 
@@ -1549,10 +2141,12 @@ dialog::backdrop { background: var(--overlay); }
           if (!D) return;
           if (ui.view === 'debts' && Math.round($('#bal-chart').clientWidth) !== balW) renderBalanceChart();
           if (ui.view === 'pnl' && lastPnlArgs && Math.round($('#pnl-chart').clientWidth) !== pnlW) renderPnlChart(...lastPnlArgs);
+          if (ui.view === 'trades' && lastEqArgs && Math.round($('#tr-chart').clientWidth) !== trW) renderEquity(...lastEqArgs);
         }, 80);
       });
-      ro.observe($('#bal-chart')); ro.observe($('#pnl-chart'));
+      ro.observe($('#bal-chart')); ro.observe($('#pnl-chart')); ro.observe($('#tr-chart'));
     }
+    initTrades();
   }
 
   /* ===================== boot ===================== */
@@ -1562,7 +2156,7 @@ dialog::backdrop { background: var(--overlay); }
     const mark = (key, meta) => {
       if (meta && meta.fromCache) return;
       fresh.add(key);
-      if (fresh.size >= 4 && !S.synced) { S.synced = true; S.stale = false; clearTimeout(timer); renderSync(); }
+      if (fresh.size >= 6 && !S.synced) { S.synced = true; S.stale = false; clearTimeout(timer); renderSync(); }
     };
     const onErr = (e) => {
       const code = e && e.code;
@@ -1574,6 +2168,8 @@ dialog::backdrop { background: var(--overlay); }
     STORE.subscribe('payments', (rows, meta) => { S.payments = rows; S.loaded.payments = true; mark('payments', meta); schedule(); }, onErr);
     STORE.subscribe('pnl', (rows, meta) => { S.pnl = rows; S.loaded.pnl = true; mark('pnl', meta); schedule(); }, onErr);
     STORE.subscribeDoc('meta/bonus', (data, meta) => { S.bonus = data; S.loaded.bonus = true; mark('bonus', meta); schedule(); }, onErr);
+    STORE.subscribe('trades', (rows, meta) => { S.trades = rows.filter((r) => r.date); S.loaded.trades = true; mark('trades', meta); schedule(); }, onErr);
+    STORE.subscribeDoc('meta/risk', (data, meta) => { S.risk = data; S.loaded.risk = true; mark('risk', meta); schedule(); }, onErr);
   }
 
   async function boot() {
