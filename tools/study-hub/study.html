@@ -393,6 +393,12 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
         <div class="field" id="dr-exam-field"><span class="label" id="dr-exam-label">試験</span>
           <div class="seg" role="radiogroup" aria-labelledby="dr-exam-label" id="dr-exam-seg"></div>
         </div>
+        <div class="field" id="dr-zyear-field" hidden><span class="label" id="dr-zyear-label">住民税の年度</span>
+          <div class="seg" role="radiogroup" aria-labelledby="dr-zyear-label">
+            <input type="radio" name="dr-zyear" id="dr-zyear-r9" value="r9" checked><label for="dr-zyear-r9">令和9年度</label>
+            <input type="radio" name="dr-zyear" id="dr-zyear-r8" value="r8"><label for="dr-zyear-r8">令和8年度</label>
+          </div>
+        </div>
         <div class="field"><span class="label" id="dr-place-label">場所</span>
           <div class="seg" role="radiogroup" aria-labelledby="dr-place-label">
             <input type="radio" name="dr-place" id="dr-place-commute" value="commute" checked><label for="dr-place-commute">通勤</label>
@@ -1355,11 +1361,23 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
     };
   }
 
-  /* ---------- 住民税（令和8年度＝令和7年中の所得） ---------- */
-  // 給与所得控除（令和7年分以降）：190万円以下は65万円、それより上の区分は従来どおり。
-  const KYUYO = [[1900000, 0, 650000], [3600000, 30, 80000], [6600000, 20, 440000], [8500000, 10, 1100000], [Infinity, 0, 1950000]];
-  const kyuyoDeduction = (r) => { const row = KYUYO.find((x) => r <= x[0]); return row[1] ? (r * row[1]) / 100 + row[2] : row[2]; };
-  const kyuyoStep = (r) => { const row = KYUYO.find((x) => r <= x[0]); const d = kyuyoDeduction(r); if (r <= 1900000) return `給与の収入金額が190万円以下なので、給与所得控除額は65万円（最低保障額）`; if (!row[1]) return '給与の収入金額が850万円を超えるので、給与所得控除額は195万円（上限）'; return `給与所得控除額 = ${nf(r)}円 × ${row[1]}% + ${nf(row[2])}円 = ${nf(d)}円`; };
+  /* ---------- 住民税（令和8年度・令和9年度） ---------- */
+  // 給与所得控除の最低保障額：令和8年度（令和7年中の所得）は65万円、
+  // 令和9年度（令和8年中の所得）は74万円（69万円に令和9・10年度の特例5万円を上乗せ。令和8年度税制改正大綱）。
+  // それより上の区分（30%+8万円、20%+44万円、10%+110万円、上限195万円）と、住民税の基礎控除43万円は両年度とも同じ。
+  const ZEI_YEARS = {
+    r8: { label: '令和8年度', income: '令和7年中', minAmt: 650000, minUpTo: 1900000, kyuyoNote: '', choseiNote: '' },
+    r9: {
+      label: '令和9年度', income: '令和8年中', minAmt: 740000, minUpTo: 2200000,
+      kyuyoNote: '令和9年度は給与所得控除の最低保障額が74万円（69万円に令和9・10年度の特例5万円を上乗せ）。74万円になるのは、収入×30%＋8万円が74万円以下になる給与の収入金額220万円以下。住民税の基礎控除は43万円のまま。',
+      choseiNote: '人的控除額の差は令和8年度と同じ額（基礎控除5万円など）で計算している。令和9年度に変わるかは一次情報で確認できていない。',
+    },
+  };
+  const zy = () => ZEI_YEARS[drill.zeiYear] || ZEI_YEARS.r8;
+  const kyuyoTable = (Y) => [[Y.minUpTo, 0, Y.minAmt], [3600000, 30, 80000], [6600000, 20, 440000], [8500000, 10, 1100000], [Infinity, 0, 1950000]];
+  const kyuyoDeduction = (r, Y = zy()) => { const row = kyuyoTable(Y).find((x) => r <= x[0]); return row[1] ? (r * row[1]) / 100 + row[2] : row[2]; };
+  const kyuyoStep = (r, Y = zy()) => { const row = kyuyoTable(Y).find((x) => r <= x[0]); const d = kyuyoDeduction(r, Y); if (r <= Y.minUpTo) return `給与の収入金額が${nf(Y.minUpTo / 10000)}万円以下なので、給与所得控除額は${nf(Y.minAmt / 10000)}万円（最低保障額）`; if (!row[1]) return '給与の収入金額が850万円を超えるので、給与所得控除額は195万円（上限）'; return `給与所得控除額 = ${nf(r)}円 × ${row[1]}% + ${nf(row[2])}円 = ${nf(d)}円`; };
+  const yearNotes = (Y, both) => [...(Y.kyuyoNote ? [Y.kyuyoNote] : []), ...(both && Y.choseiNote ? [Y.choseiNote] : [])];
   // 調整控除：課税所得200万円以下は min(人的控除差, 課税所得)×5%、超えると {人的控除差−(課税所得−200万円)}×5%（最低2,500円）。市3%・県2%に分ける。
   function chosei(T, H) {
     if (T <= 2000000) { const base = Math.min(H, T); return { city: (base * 3) / 100, pref: (base * 2) / 100, total: (base * 5) / 100, base, rule: 'le' }; }
@@ -1375,13 +1393,14 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
   const jinteki = (spouse, n) => [`基礎控除 5万円`, ...(spouse ? ['配偶者控除（一般）5万円'] : []), ...(n ? [`扶養控除（一般）5万円 × ${n}人`] : [])].join(' + ');
 
   function zKyuyo() {
-    const r = R(375, 3000) * 4000, d = kyuyoDeduction(r), g = r - d;
+    const Y = zy();
+    const r = (drill.zeiYear === 'r9' && Math.random() < 0.4 ? R(375, 650) : R(375, 3000)) * 4000, d = kyuyoDeduction(r, Y), g = r - d;
     return {
-      title: '給与所得の金額（令和7年分以降の給与所得控除）', text: '令和7年中の給与の収入金額から、給与所得の金額を求める（令和8年度の個人住民税で使う）。',
-      given: [['給与の収入金額', `${nf(r)}円`]],
+      title: `給与所得の金額（${Y.label}）`, text: `${Y.income}の給与の収入金額から、給与所得の金額を求める（${Y.label}の個人住民税で使う）。`,
+      given: [['給与の収入金額', `${nf(r)}円`], ['年度', `${Y.label}（${Y.income}の所得）`]],
       ask: '給与所得控除額と給与所得の金額を求めなさい。',
       fields: [{ label: '給与所得控除額', unit: '円', answer: d }, { label: '給与所得の金額', unit: '円', answer: g }],
-      steps: [kyuyoStep(r), `給与所得の金額 = ${nf(r)}円 − ${nf(d)}円 = ${nf(g)}円`, '660万円未満は本来、4,000円刻みの表（所得税法の別表第五）で求める。この問題の収入は4,000円単位なので、式と同じ結果になる。'],
+      steps: [kyuyoStep(r, Y), `給与所得の金額 = ${nf(r)}円 − ${nf(d)}円 = ${nf(g)}円`, '660万円未満は本来、4,000円刻みの表（所得税法の別表第五）で求める。この問題の収入は4,000円単位なので、式と同じ結果になる。', ...yearNotes(Y, false)],
     };
   }
   function zChosei() {
@@ -1394,14 +1413,17 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
       given: [['合計課税所得金額', `${nf(T)}円`], ['人的控除', `基礎控除${spouse ? '、配偶者控除（一般）' : ''}${n ? `、扶養控除（一般）×${n}人` : ''}`]],
       ask: '人的控除額の差の合計と、調整控除額（市町村民税と道府県民税の合計）を求めなさい。',
       fields: [{ label: '人的控除額の差の合計', unit: '円', answer: H }, { label: '調整控除額（合計）', unit: '円', answer: c.total }],
-      steps: [`人的控除額の差 = ${jinteki(spouse, n)} = ${nf(H)}円`, ...choseiSteps(T, H, c), `内訳は市町村民税 ${nf(c.city)}円・道府県民税 ${nf(c.pref)}円（3%と2%で分ける）`],
+      steps: [`人的控除額の差 = ${jinteki(spouse, n)} = ${nf(H)}円`, ...choseiSteps(T, H, c), `内訳は市町村民税 ${nf(c.city)}円・道府県民税 ${nf(c.pref)}円（3%と2%で分ける）`, ...(zy().choseiNote ? [zy().choseiNote] : [])],
     };
   }
   function zFull() {
+    const Y = zy();
     for (let k = 0; k < 60; k++) {
-      const r = R(750, 2000) * 4000;
-      const g = r - kyuyoDeduction(r);
-      const spouse = Math.random() < 0.5, n = pick([0, 0, 1, 2]);
+      // 令和9年度は、最低保障額が効く年収180万〜300万円の単身者も出す
+      const low = drill.zeiYear === 'r9' && Math.random() < 0.35;
+      const r = (low ? R(450, 750) : R(750, 2000)) * 4000;
+      const g = r - kyuyoDeduction(r, Y);
+      const spouse = low ? false : Math.random() < 0.5, n = low ? 0 : pick([0, 0, 1, 2]);
       const S = Math.round((r * R(140, 155)) / 1000 / 100) * 100;
       const D = S + 430000 + (spouse ? 330000 : 0) + 330000 * n;
       const T = Math.floor((g - D) / 1000) * 1000;
@@ -1412,12 +1434,12 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
       const city = Math.max(0, Math.floor(cityRaw / 100) * 100), pref = Math.max(0, Math.floor(prefRaw / 100) * 100);
       const wari = city + pref, total = wari + 4000;
       return {
-        title: '給与所得者の個人住民税（令和8年度）', text: '令和7年中の所得で令和8年度の住民税を計算する。給与以外の所得と税額控除はなく、合計所得金額は900万円以下。森林環境税（年1,000円・国税）は含めない。',
+        title: `給与所得者の個人住民税（${Y.label}）`, text: `${Y.income}の所得で${Y.label}の住民税を計算する。給与以外の所得と税額控除はなく、合計所得金額は900万円以下${low ? 'で、非課税になる所得の水準ではない' : ''}。森林環境税（年1,000円・国税）は含めない。`,
         given: [['給与の収入金額', `${nf(r)}円`], ['社会保険料', `${nf(S)}円`], ['配偶者', spouse ? 'あり（収入なし）' : 'なし'], ['16歳以上の扶養親族', n ? `${n}人（収入なし）` : 'なし'], ['所得割の税率', '市町村民税6%・道府県民税4%'], ['均等割', '市町村民税3,000円・道府県民税1,000円'], ['端数', '所得割は市町村民税・道府県民税ごとに100円未満切り捨て']],
         ask: '給与所得の金額、課税総所得金額、調整控除額、所得割額（2税の合計）、年税額（均等割を含む）を求めなさい。',
         fields: [{ label: '給与所得の金額', unit: '円', answer: g }, { label: '課税総所得金額', unit: '円', answer: T }, { label: '調整控除額（合計）', unit: '円', answer: c.total }, { label: '所得割額（合計）', unit: '円', answer: wari }, { label: '年税額', unit: '円', answer: total }],
         steps: [
-          kyuyoStep(r) + `。給与所得の金額 = ${nf(g)}円`,
+          kyuyoStep(r, Y) + `。給与所得の金額 = ${nf(g)}円`,
           `所得控除 = 社会保険料 ${nf(S)}円 + 基礎控除43万円${spouse ? ' + 配偶者控除33万円' : ''}${n ? ` + 扶養控除33万円 × ${n}人` : ''} = ${nf(D)}円`,
           `課税総所得金額 = ${nf(g)}円 − ${nf(D)}円 = ${nf(g - D)}円 → 1,000円未満を切り捨てて ${nf(T)}円`,
           `人的控除額の差 = ${jinteki(spouse, n)} = ${nf(H)}円`,
@@ -1426,6 +1448,7 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
           `道府県民税の所得割 = ${nf(T)}円 × 4% − ${nf(c.pref)}円 = ${nf(prefRaw)}円 → ${nf(pref)}円`,
           `年税額 = 所得割 ${nf(wari)}円 + 均等割 4,000円 = ${nf(total)}円`,
           '均等割や所得割は、条例で上乗せ（超過課税）している自治体があり、指定都市は所得割が市8%・県2%。実際の税額は自治体ごとの設定で確認する。',
+          ...yearNotes(Y, true),
         ],
       };
     }
@@ -1462,7 +1485,7 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
   };
   window.StudyDrills = GENS;
 
-  const drill = { sid: uid(), exam: 'boki2', q: null, prev: null, shownAt: 0, answered: false, count: 0, total: 0, correct: 0, ms: 0, perArea: {} };
+  const drill = { sid: uid(), exam: 'boki2', zeiYear: 'r9', q: null, prev: null, shownAt: 0, answered: false, count: 0, total: 0, correct: 0, ms: 0, perArea: {} };
   window.StudyDrillState = drill;
   const DRILL_KEYS = ['boki2', 'fp2', 'zei'];
   const DRILL_LABEL = { boki2: '簿記2級', fp2: 'FP2級', zei: '住民税' };
@@ -1475,6 +1498,7 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
     fillTopics();
   }
   function fillTopics() {
+    $('#dr-zyear-field').hidden = drill.exam !== 'zei';
     $('#dr-topic').innerHTML = '<option value="auto">おまかせ（正答率の低い論点を多めに）</option>' + GENS[drill.exam].map((g) => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
   }
   function pickAuto(exam) {
@@ -1494,7 +1518,7 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
     const q = g.fn();
     // 住民税の練習はFP2のタックスプランニングとして記録する
     q.genId = g.id; q.exam = EXAMS[drill.exam] ? drill.exam : 'fp2'; q.area = q.area || g.area;
-    q.chip = drill.exam === 'zei' ? '住民税（令和8年度）' : areaName(q.exam, q.area);
+    q.chip = drill.exam === 'zei' ? `住民税（${zy().label}）` : areaName(q.exam, q.area);
     drill.q = q; drill.prev = g.id; drill.shownAt = Date.now(); drill.answered = false; drill.count += 1;
     const fieldHtml = q.fields.map((f, i) => `<div class="ans" id="dr-ans-${i}">
         <label for="dr-a${i}">${esc(f.label)}</label>
@@ -1605,6 +1629,8 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
     ['z03', 'fp2', 'tax', '合計課税所得金額が200万円以下のときの調整控除は？', '人的控除額の差の合計と、合計課税所得金額の少ないほうの5%。'],
     ['z04', 'fp2', 'tax', '合計課税所得金額が200万円を超えるときの調整控除は？', '（人的控除額の差の合計−（合計課税所得金額−200万円））×5%。2,500円未満なら2,500円。'],
     ['z05', 'fp2', 'tax', '調整控除が受けられないのはどんな人？', '合計所得金額が2,500万円を超える人。'],
+    ['z06', 'fp2', 'tax', '令和9年度の住民税で、給与所得控除の最低保障額は？', '74万円。69万円に、令和9・10年度の特例で5万円を上乗せした額。'],
+    ['z07', 'fp2', 'tax', '令和9年度の住民税の基礎控除額は？', '43万円のまま。所得税の基礎控除は上がるが、住民税は据え置き。'],
     ['b01', 'boki2', 'hyojun', '直接材料費の価格差異の計算式は？', '（標準単価−実際単価）×実際消費量。'],
     ['b02', 'boki2', 'hyojun', '直接材料費の数量差異の計算式は？', '（標準消費量−実際消費量）×標準単価。'],
     ['b03', 'boki2', 'hyojun', '直接労務費の賃率差異の計算式は？', '（標準賃率−実際賃率）×実際作業時間。'],
@@ -1865,6 +1891,7 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
     initCards();
     document.addEventListener('change', (e) => {
       if (e.target.name === 'dr-exam') { drill.exam = e.target.value; fillTopics(); newQuestion(); }
+      if (e.target.name === 'dr-zyear') { drill.zeiYear = e.target.value; newQuestion(); }
       if (e.target.id === 'dr-topic') newQuestion();
     });
     document.addEventListener('submit', (e) => { if (e.target.id === 'dr-form') { e.preventDefault(); checkAnswer(); } });
