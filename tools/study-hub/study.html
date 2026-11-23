@@ -18,6 +18,9 @@
   --accent-ink: #ffffff;
   --accent-soft: #e0e5fa;
   --marker: #ffe066;
+  --red-ink: #c0262d;
+  --sheet: #cd2630;
+  --sheet-ink: #ffffff;
   --series-1: #2a78d6;
   --series-2: #eb6834;
   --good-ink: #146c2e;
@@ -38,7 +41,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #10131f; --paper-line: rgba(142, 162, 255, 0.05); --surface: #171b2b; --surface-2: #1e2336; --ink: #e8eaf6; --ink-2: #b7bdd8; --muted: #8b92b2;
-    --rule: #2a3049; --accent: #8ea2ff; --accent-ink: #0b1030; --accent-soft: #242c55; --marker: rgba(255, 213, 0, 0.3);
+    --rule: #2a3049; --accent: #8ea2ff; --accent-ink: #0b1030; --accent-soft: #242c55; --marker: rgba(255, 213, 0, 0.3); --red-ink: #ff8a8f; --sheet: #8f1c24; --sheet-ink: #ffffff;
     --series-1: #3987e5; --series-2: #d95926;
     --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
     --grid: #252b42; --axis: #3a4260; --overlay: rgba(0, 0, 0, 0.6); --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
@@ -47,7 +50,7 @@
 }
 :root[data-theme="dark"] {
   --bg: #10131f; --paper-line: rgba(142, 162, 255, 0.05); --surface: #171b2b; --surface-2: #1e2336; --ink: #e8eaf6; --ink-2: #b7bdd8; --muted: #8b92b2;
-  --rule: #2a3049; --accent: #8ea2ff; --accent-ink: #0b1030; --accent-soft: #242c55; --marker: rgba(255, 213, 0, 0.3);
+  --rule: #2a3049; --accent: #8ea2ff; --accent-ink: #0b1030; --accent-soft: #242c55; --marker: rgba(255, 213, 0, 0.3); --red-ink: #ff8a8f; --sheet: #8f1c24; --sheet-ink: #ffffff;
   --series-1: #3987e5; --series-2: #d95926;
   --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
   --grid: #252b42; --axis: #3a4260; --overlay: rgba(0, 0, 0, 0.6); --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
@@ -96,6 +99,7 @@ main.wrap { display: grid; gap: 16px; padding-block: 16px 64px; }
 .btn.ghost { background: var(--surface); color: var(--accent); border-color: var(--rule); }
 .btn.danger { background: var(--crit-bg); color: var(--crit-ink); }
 .btn.small { min-height: 36px; padding: 6px 12px; font-size: 0.85rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
 .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .chip-btn { appearance: none; border: 1px solid var(--rule); background: var(--surface-2); color: var(--ink); font: inherit; font-weight: 700; font-size: 0.85rem; border-radius: 999px; padding: 6px 14px; min-height: 36px; cursor: pointer; }
 .chip-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -247,6 +251,19 @@ dialog::backdrop { background: var(--overlay); }
 .score.ok { color: var(--good-ink); }
 .score.ng { color: var(--crit-ink); }
 
+/* flash cards */
+.flash { display: grid; gap: 14px; }
+.fq { margin: 0; font-size: 1.22rem; font-weight: 700; line-height: 1.65; min-height: 3.3em; text-wrap: pretty; }
+.fa { position: relative; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--rule); padding: 14px 16px; min-height: 5em; cursor: pointer; }
+.fa:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fa-text { margin: 0; font-size: 1.05rem; line-height: 1.75; color: var(--red-ink); font-weight: 700; }
+.red-sheet { position: absolute; inset: 0; border-radius: 12px; background: var(--sheet); color: var(--sheet-ink); display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.08em; transition: opacity 0.25s; }
+.fa.open .red-sheet { opacity: 0; pointer-events: none; }
+.player { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 8px; }
+.player .btn { min-height: 54px; padding-inline: 8px; }
+.rate-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
+
 @media (max-width: 480px) {
   .calc > div { grid-template-columns: 1fr; gap: 0; }
 }
@@ -267,6 +284,7 @@ dialog::backdrop { background: var(--overlay); }
       <button type="button" class="tab" role="tab" id="tab-log" data-tab="log" aria-controls="view-log" aria-selected="false" tabindex="-1">記録</button>
       <button type="button" class="tab" role="tab" id="tab-weak" data-tab="weak" aria-controls="view-weak" aria-selected="false" tabindex="-1">弱点</button>
       <button type="button" class="tab" role="tab" id="tab-drill" data-tab="drill" aria-controls="view-drill" aria-selected="false" tabindex="-1">ドリル</button>
+      <button type="button" class="tab" role="tab" id="tab-cards" data-tab="cards" aria-controls="view-cards" aria-selected="false" tabindex="-1">暗記</button>
     </nav>
   </div>
 </header>
@@ -388,6 +406,48 @@ dialog::backdrop { background: var(--overlay); }
     <article class="panel qcard" id="dr-card"><p class="empty">問題を準備しています…</p></article>
     <div class="panel"><h2>今回の成績</h2><div id="dr-session"><p class="empty">まだ解いていません。</p></div><p class="hint">答え合わせをするたびに、結果が「記録」と「弱点」に入ります（論点ごとに1件にまとめます）。</p></div>
   </section>
+
+  <section class="view" id="view-cards" role="tabpanel" aria-labelledby="tab-cards" hidden>
+    <article class="panel flash" id="cd-card">
+      <div class="q-head"><span class="chip" id="cd-area">—</span><span class="muted small" id="cd-pos"></span></div>
+      <p class="fq" id="cd-q">カードを準備しています…</p>
+      <div class="fa" id="cd-a-wrap" role="button" tabindex="0" aria-label="答えを見る"><p class="fa-text" id="cd-a"></p><div class="red-sheet" aria-hidden="true">タップで答え</div></div>
+      <div class="player">
+        <button type="button" class="btn ghost" id="cd-prev">‹ 前へ</button>
+        <button type="button" class="btn" id="cd-play">▶ 読み上げ</button>
+        <button type="button" class="btn ghost" id="cd-next">次へ ›</button>
+      </div>
+      <div class="rate-row"><button type="button" class="btn" id="cd-know">○ 覚えた</button><button type="button" class="btn ghost" id="cd-unknown">△ まだ</button></div>
+      <p class="hint" id="cd-voice"></p>
+    </article>
+    <div class="panel">
+      <h2>カードと読み上げの設定</h2>
+      <div class="form-grid">
+        <div class="field"><label for="cd-deck">カード</label><select id="cd-deck"><option value="all">すべて</option><option value="fp2">FP2級</option><option value="boki2">簿記2級</option><option value="mine">自分のカード</option><option value="weak">「まだ」が多いカード</option></select></div>
+        <div class="field"><label for="cd-rate">読む速さ</label><select id="cd-rate"><option value="0.9">ゆっくり</option><option value="1" selected>ふつう</option><option value="1.2">速め</option><option value="1.4">とても速い</option></select></div>
+        <div class="field"><label for="cd-pause">考える時間</label><select id="cd-pause"><option value="3">3秒</option><option value="5" selected>5秒</option><option value="8">8秒</option></select></div>
+        <div class="field"><span class="label">並び</span><label class="check"><input type="checkbox" id="cd-shuffle" checked>シャッフルする</label></div>
+      </div>
+    </div>
+    <div class="panel"><h2>今回</h2><div id="cd-session"><p class="empty">まだカードを見ていません。</p></div><p class="hint">「覚えた／まだ」を押した結果と時間が「記録」と「弱点」に入ります。</p></div>
+    <div class="panel">
+      <h2>カードを足す</h2>
+      <form id="cd-form" class="form-grid" novalidate>
+        <div class="field span"><span class="label" id="cd-exam-label">試験</span>
+          <div class="seg" role="radiogroup" aria-labelledby="cd-exam-label">
+            <input type="radio" name="cd-exam" id="cd-exam-fp2" value="fp2" checked><label for="cd-exam-fp2">FP2級</label>
+            <input type="radio" name="cd-exam" id="cd-exam-boki2" value="boki2"><label for="cd-exam-boki2">簿記2級</label>
+          </div>
+        </div>
+        <div class="field span"><label for="cd-new-area">分野</label><select id="cd-new-area"></select></div>
+        <div class="field span"><label for="cd-new-q">問い</label><textarea id="cd-new-q" rows="2" maxlength="300" placeholder="例：小規模宅地等の特例で、特定居住用宅地等の限度面積と減額割合は？"></textarea></div>
+        <div class="field span"><label for="cd-new-a">答え</label><textarea id="cd-new-a" rows="2" maxlength="300" placeholder="テキストで確認した答えを書く"></textarea></div>
+        <p class="form-error span" id="cd-error" hidden></p>
+        <div class="actions span"><button type="submit" class="btn">カードを足す</button></div>
+      </form>
+      <details id="cd-mine-box"><summary id="cd-mine-sum">自分のカード（0枚）</summary><ul class="loglist" id="cd-mine"></ul></details>
+    </div>
+  </section>
 </main>
 
 <dialog id="log-dialog" aria-labelledby="ld-title">
@@ -486,7 +546,7 @@ dialog::backdrop { background: var(--overlay); }
   };
   const KEYS = ['fp2', 'boki2'];
   const PLACES = { commute: '通勤', lunch: '昼休み', home: '家', other: 'その他' };
-  const KINDS = { read: 'テキスト', practice: '問題演習', past: '過去問', recall: '思い出して書く', audio: '音声', drill: 'ドリル' };
+  const KINDS = { read: 'テキスト', practice: '問題演習', past: '過去問', recall: '思い出して書く', audio: '音声', drill: 'ドリル', cards: '暗記カード' };
   const areaName = (exam, id) => ((EXAMS[exam] || { areas: [] }).areas.find((a) => a.id === id) || { name: id || '—' }).name;
 
   /* ===================== storage ===================== */
@@ -517,9 +577,9 @@ dialog::backdrop { background: var(--overlay); }
   }
 
   /* ===================== state & planning ===================== */
-  const S = { exams: {}, logs: [], plan: null, loaded: { exams: false, logs: false, plan: false }, mode: 'loading', synced: false, stale: false, readOnly: false, subError: '' };
+  const S = { exams: {}, logs: [], plan: null, cards: [], cardStats: {}, loaded: { exams: false, logs: false, plan: false, cards: false, cardStats: false }, mode: 'loading', synced: false, stale: false, readOnly: false, subError: '' };
   let STORE = null, DOWNLOADS = null, D = null;
-  const VIEWS = ['today', 'plan', 'log', 'weak', 'drill'];
+  const VIEWS = ['today', 'plan', 'log', 'weak', 'drill', 'cards'];
   const ui = { view: 'today' };
 
   function examList() {
@@ -657,6 +717,7 @@ dialog::backdrop { background: var(--overlay); }
     renderPlan();
     renderLog();
     renderWeak();
+    renderCards();
   }
 
   function renderSync() {
@@ -1423,10 +1484,281 @@ dialog::backdrop { background: var(--overlay); }
     $('#dr-session').innerHTML = `<div class="stat-row"><span><b>${drill.correct}</b> / ${drill.total}問正解（${pct0(drill.correct / drill.total)}）</span><span class="muted">${esc(fmtMin(Math.max(1, Math.round(drill.ms / 60000))))}</span></div><p class="hint">${esc(parts)}</p>`;
   }
 
+  /* ===================== 暗記カード ===================== */
+  // 中身は、国税庁などで確認した数字と、簿記の計算式に限っている。
+  const BUILTIN = [
+    ['f01', 'fp2', 'tax', '退職所得控除額は、勤続20年以下ならいくら？', '40万円×勤続年数。80万円に満たないときは80万円。'],
+    ['f02', 'fp2', 'tax', '退職所得控除額は、勤続20年を超えるといくら？', '800万円＋70万円×（勤続年数−20年）。'],
+    ['f03', 'fp2', 'tax', '退職所得の金額はどう計算する？', '（収入金額−退職所得控除額）×2分の1。勤続5年以下の役員等は2分の1にしない。'],
+    ['f04', 'fp2', 'tax', '勤続年数に1年未満の端数があるときは？', '1年に切り上げる。'],
+    ['f05', 'fp2', 'tax', '所得税の税率は何段階？', '5%から45%までの7段階。'],
+    ['f06', 'fp2', 'tax', '課税所得330万円超695万円以下の所得税率と控除額は？', '20%、控除額42万7,500円。'],
+    ['f07', 'fp2', 'tax', '課税所得900万円超1,800万円以下の所得税率と控除額は？', '33%、控除額153万6,000円。'],
+    ['f08', 'fp2', 'inherit', '相続税の遺産に係る基礎控除額は？', '3,000万円＋600万円×法定相続人の数。'],
+    ['f09', 'fp2', 'inherit', '相続人が配偶者と子2人のときの基礎控除額は？', '4,800万円。'],
+    ['f10', 'fp2', 'inherit', '相続税の速算表で、取得金額1億円超2億円以下の税率と控除額は？', '40%、控除額1,700万円。'],
+    ['f11', 'fp2', 'inherit', '相続税の最高税率は？', '55%。6億円を超える区分で、控除額は7,200万円。'],
+    ['f12', 'fp2', 'inherit', '暦年課税の贈与税の基礎控除額は？', '1年に110万円。'],
+    ['f13', 'fp2', 'inherit', '贈与税の特例税率を使えるのはどんな贈与？', '贈与を受けた年の1月1日に18歳以上の人が、父母や祖父母などの直系尊属から受けた贈与。'],
+    ['f14', 'fp2', 'inherit', '特例税率で、基礎控除後400万円超600万円以下の税率と控除額は？', '20%、控除額30万円。'],
+    ['f15', 'fp2', 'inherit', '一般税率で、基礎控除後300万円超400万円以下の税率と控除額は？', '20%、控除額25万円。'],
+    ['f16', 'fp2', 'estate', '前面道路の幅員が12m未満のとき、容積率はどう決まる？', '指定容積率と、幅員×法定乗数の小さいほう。乗数は原則、住居系が10分の4、それ以外が10分の6。'],
+    ['f17', 'fp2', 'estate', '特定行政庁が指定する角地では、建蔽率はどうなる？', '10%上乗せされる。'],
+    ['f18', 'fp2', 'life', '毎年の積立額から、将来の合計額を出す係数は？', '年金終価係数。'],
+    ['f19', 'fp2', 'life', '将来の目標額から、毎年の積立額を出す係数は？', '減債基金係数。'],
+    ['f20', 'fp2', 'life', 'いまの元本から、毎年受け取れる額を出す係数は？', '資本回収係数。住宅ローンの毎年の返済額にも使う。'],
+    ['f21', 'fp2', 'life', '毎年受け取りたい額から、いま必要な元本を出す係数は？', '年金現価係数。'],
+    ['f22', 'fp2', 'life', '逆数の関係にある係数の組み合わせは？', '終価係数と現価係数、年金終価係数と減債基金係数、年金現価係数と資本回収係数。'],
+    ['f23', 'fp2', 'fin', '債券の最終利回りはどう計算する？', '表面利率に、額面100円から購入価格を引いて残存年数で割った額を足し、購入価格で割って100を掛ける。'],
+    ['f24', 'fp2', 'fin', 'PERとPBRの計算式は？', 'PERは株価÷1株あたり純利益。PBRは株価÷1株あたり純資産。'],
+    ['f25', 'fp2', 'fin', 'ROEの計算式は？', '当期純利益÷自己資本×100。'],
+    ['f26', 'fp2', 'fin', '配当性向の計算式は？', '配当金の総額÷当期純利益×100。'],
+    ['b01', 'boki2', 'hyojun', '直接材料費の価格差異の計算式は？', '（標準単価−実際単価）×実際消費量。'],
+    ['b02', 'boki2', 'hyojun', '直接材料費の数量差異の計算式は？', '（標準消費量−実際消費量）×標準単価。'],
+    ['b03', 'boki2', 'hyojun', '直接労務費の賃率差異の計算式は？', '（標準賃率−実際賃率）×実際作業時間。'],
+    ['b04', 'boki2', 'hyojun', '直接労務費の時間差異の計算式は？', '（標準作業時間−実際作業時間）×標準賃率。'],
+    ['b05', 'boki2', 'hyojun', '製造間接費の予算差異は？', '予算許容額−実際発生額。予算許容額は、変動費率×実際操業度＋固定費予算額。'],
+    ['b06', 'boki2', 'hyojun', '製造間接費の操業度差異は？', '固定費率×（実際操業度−基準操業度）。'],
+    ['b07', 'boki2', 'hyojun', '能率差異を変動費と固定費の両方から計算するときの式は？', '標準配賦率×（標準操業度−実際操業度）。'],
+    ['b08', 'boki2', 'hyojun', '標準から実際を引いてマイナスになった差異は、有利と不利のどちら？', '不利差異。借方差異ともいう。'],
+    ['b09', 'boki2', 'cvp', '損益分岐点の売上高の計算式は？', '固定費÷貢献利益率。'],
+    ['b10', 'boki2', 'cvp', '目標営業利益を達成する売上高は？', '（固定費＋目標営業利益）÷貢献利益率。'],
+    ['b11', 'boki2', 'cvp', '安全余裕率の計算式は？', '（売上高−損益分岐点の売上高）÷売上高×100。'],
+    ['b12', 'boki2', 'cvp', '全部原価計算と直接原価計算で営業利益がずれる理由は？', '期首と期末の在庫に含まれる固定製造原価の分だけずれる。'],
+    ['b13', 'boki2', 'sogo', '材料を工程の始点で投入するとき、月末仕掛品への材料費はどう配分する？', '個数そのままで配分する。加工費は、加工進捗度で換算した数量で配分する。'],
+    ['b14', 'boki2', 'sogo', '先入先出法では、月末仕掛品の原価をどの単価で計算する？', '当月に投入した分の単価で計算する。'],
+    ['b15', 'boki2', 'sogo', '平均法では、月末仕掛品の原価をどの単価で計算する？', '月初仕掛品と当月投入を合計して求めた平均の単価で計算する。'],
+    ['b16', 'boki2', 'renketsu', '連結で、のれんの金額は？', '子会社株式の取得原価−子会社の資本×親会社の持分比率。'],
+    ['b17', 'boki2', 'renketsu', '支配獲得日の非支配株主持分は？', '子会社の資本×非支配株主の持分比率。'],
+    ['b18', 'boki2', 'kobetsu', '繰延税金資産の計上額は？', '将来減算一時差異×法定実効税率。'],
+    ['b19', 'boki2', 'kobetsu', '200%定率法の償却率は？', '定額法の償却率（1÷耐用年数）の2倍。'],
+    ['b20', 'boki2', 'kobetsu', '期中に取得した固定資産の、定額法の減価償却費は？', '1年分×使用した月数÷12。月割で計算する。'],
+  ].map(([id, exam, area, q, a]) => ({ id, exam, area, q, a }));
+
+  const cs = { deck: [], idx: 0, cur: null, open: false, shownAt: 0, sid: uid(), perArea: {}, playing: null, seen: new Set(), rated: 0, known: 0, built: false };
+  const statOf = (id) => S.cardStats[id] || { known: 0, unknown: 0, lastAt: 0 };
+  const myCards = () => S.cards.filter((c) => c.q && c.a && EXAMS[c.exam]).map((c) => ({ ...c, mine: true }));
+  function buildDeck(keepCurrent) {
+    const f = $('#cd-deck').value;
+    let list = BUILTIN.concat(myCards());
+    if (f === 'fp2' || f === 'boki2') list = list.filter((c) => c.exam === f);
+    else if (f === 'mine') list = list.filter((c) => c.mine);
+    else if (f === 'weak') list = list.filter((c) => { const s = statOf(c.id); return s.unknown > 0 && s.unknown >= s.known; });
+    if ($('#cd-shuffle').checked) { for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; } }
+    else list.sort((a, b) => { const sa = statOf(a.id), sb = statOf(b.id); return (sb.unknown - sb.known) - (sa.unknown - sa.known) || sa.lastAt - sb.lastAt; });
+    const curId = keepCurrent && cs.cur ? cs.cur.id : null;
+    cs.deck = list;
+    cs.idx = curId ? Math.max(0, list.findIndex((c) => c.id === curId)) : 0;
+    cs.built = true;
+    showCard(false);
+  }
+  function bucket(c) {
+    const k = c.exam + ':' + c.area;
+    return cs.perArea[k] || (cs.perArea[k] = { exam: c.exam, area: c.area, ms: 0, q: 0, ok: 0, id: `cards-${cs.sid}-${c.exam}-${c.area}`, createdAt: Date.now(), chain: Promise.resolve(), dirty: false });
+  }
+  function accrue() {
+    if (!cs.cur || !cs.shownAt) return;
+    const b = bucket(cs.cur);
+    b.ms += Math.min(3 * 60000, Date.now() - cs.shownAt);
+    b.dirty = true;
+    cs.shownAt = Date.now();
+  }
+  function flushCards() {
+    if (!STORE) return;
+    accrue();
+    for (const b of Object.values(cs.perArea)) {
+      if (!b.dirty || (b.q === 0 && b.ms < 30000)) continue;
+      b.dirty = false;
+      const data = { date: todayStr(), exam: b.exam, area: b.area, minutes: Math.max(1, Math.round(b.ms / 60000)), place: radioVal('dr-place') || 'commute', kind: 'cards', questions: b.q || null, correct: b.q ? b.ok : null, note: '暗記カード', createdAt: b.createdAt };
+      b.chain = b.chain.then(() => write(() => STORE.set('logs/' + b.id, data)));
+    }
+  }
+  function updatePos() {
+    const c = cs.cur;
+    if (!c) return;
+    const s = statOf(c.id);
+    $('#cd-pos').textContent = `${cs.idx + 1} / ${cs.deck.length}${s.known || s.unknown ? `・○${s.known} △${s.unknown}` : ''}`;
+  }
+  function showCard(open) {
+    accrue();
+    const c = cs.deck[cs.idx] || null;
+    cs.cur = c; cs.open = !!open; cs.shownAt = Date.now();
+    const wrap = $('#cd-a-wrap');
+    if (!c) {
+      const f = $('#cd-deck').value;
+      $('#cd-q').textContent = f === 'mine' ? '自分のカードはまだありません。下の「カードを足す」から作れます。' : f === 'weak' ? '「まだ」が多いカードはありません。' : 'カードがありません。';
+      $('#cd-a').textContent = ''; $('#cd-area').textContent = '—'; $('#cd-pos').textContent = '';
+      wrap.classList.remove('open');
+      return;
+    }
+    cs.seen.add(c.id);
+    $('#cd-q').textContent = c.q;
+    $('#cd-a').textContent = c.a;
+    $('#cd-area').textContent = `${EXAMS[c.exam].short}：${areaName(c.exam, c.area)}${c.mine ? '・自分のカード' : ''}`;
+    wrap.classList.toggle('open', cs.open);
+    wrap.setAttribute('aria-label', cs.open ? '答え' : '答えを見る');
+    updatePos();
+    renderCardSession();
+  }
+  function step(d) { if (!cs.deck.length) return; cs.idx = (cs.idx + d + cs.deck.length) % cs.deck.length; showCard(false); }
+  function renderCardSession() {
+    const el = $('#cd-session');
+    if (!cs.seen.size) { el.innerHTML = '<p class="empty">まだカードを見ていません。</p>'; return; }
+    const ms = Object.values(cs.perArea).reduce((s, b) => s + b.ms, 0) + (cs.cur && cs.shownAt ? Math.min(180000, Date.now() - cs.shownAt) : 0);
+    el.innerHTML = `<div class="stat-row"><span><b>${cs.seen.size}</b>枚を見た</span><span>評価 ${cs.rated}枚（覚えた ${cs.known}）</span><span class="muted">${esc(fmtMin(Math.max(1, Math.round(ms / 60000))))}</span></div>`;
+  }
+  async function rateCard(known) {
+    const c = cs.cur;
+    if (!c) return;
+    stopPlay();
+    const s = statOf(c.id);
+    const next = { known: s.known + (known ? 1 : 0), unknown: s.unknown + (known ? 0 : 1), lastAt: Date.now() };
+    S.cardStats[c.id] = next;
+    accrue();
+    const b = bucket(c); b.q += 1; if (known) b.ok += 1; b.dirty = true;
+    cs.rated += 1; if (known) cs.known += 1;
+    write(() => STORE.set('cardStats/' + c.id, next));
+    flushCards();
+    step(1);
+  }
+
+  const Voice = {
+    kind: 'pending', tts: null, ja: null, initP: null,
+    ready() { if (!this.initP) this.initP = this.init(); return this.initP; },
+    async init() {
+      let t = null;
+      try { if (window.claude && typeof window.claude.use === 'function') t = await window.claude.use('tts'); } catch (e) { t = null; }
+      if (t) { this.tts = t; this.kind = 'claude'; }
+      else if ('speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function') {
+        this.kind = 'browser'; this.pick();
+        try { speechSynthesis.addEventListener('voiceschanged', () => { this.pick(); renderVoice(); }); } catch (e) { /* older browsers */ }
+      } else this.kind = 'none';
+      renderVoice();
+      return this.kind;
+    },
+    pick() { try { this.ja = speechSynthesis.getVoices().find((v) => /^ja/i.test(v.lang)) || null; } catch (e) { this.ja = null; } },
+    rate() { return Number($('#cd-rate').value) || 1; },
+    say(text) {
+      if (this.kind === 'claude') return this.tts.speak(text, { language: 'ja', rate: this.rate() });
+      if (this.kind === 'browser') {
+        return new Promise((resolve, reject) => {
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'ja-JP'; if (this.ja) u.voice = this.ja; u.rate = this.rate();
+          u.onend = () => resolve();
+          u.onerror = (e) => reject({ code: e && (e.error === 'interrupted' || e.error === 'canceled') ? 'stopped' : 'upstream_error' });
+          try { speechSynthesis.speak(u); } catch (err) { reject({ code: 'unavailable' }); }
+        });
+      }
+      return Promise.reject({ code: 'unavailable' });
+    },
+    stop() {
+      if (this.kind === 'claude' && this.tts) this.tts.stop().catch(() => {});
+      else if (this.kind === 'browser') { try { speechSynthesis.cancel(); } catch (e) { /* ignore */ } }
+    },
+  };
+  function renderVoice() {
+    const msg = {
+      pending: '読み上げの準備をしています…',
+      claude: '読み上げはClaudeの音声です。止めるときは「止める」を押してください。',
+      browser: Voice.ja ? '読み上げはこの端末の日本語音声です。電車ではイヤホンを使ってください。' : 'この端末に日本語の音声が見つかりません。読み上げがうまくいかないときは、答えをタップで表示してください。',
+      denied: '読み上げはこのページでオフになっています（ページのアクセス許可メニューで戻せます）。答えはタップで表示できます。',
+      none: 'この画面では読み上げを使えません。答えはタップで表示できます。',
+    };
+    $('#cd-voice').textContent = msg[Voice.kind] || '';
+    $('#cd-play').disabled = Voice.kind === 'none' || Voice.kind === 'denied';
+  }
+  const spoken = (s) => s.replace(/×/g, 'かける').replace(/÷/g, 'わる').replace(/[＋+]/g, 'たす').replace(/−/g, 'ひく').replace(/[%％]/g, 'パーセント').replace(/[（）()]/g, '、');
+  const sleepFor = (ms, token) => new Promise((resolve) => { const t = setTimeout(resolve, ms); token.wake = () => { clearTimeout(t); resolve(); }; });
+  function setPlayBtn() { $('#cd-play').textContent = cs.playing ? '■ 止める' : '▶ 読み上げ'; }
+  function stopPlay() {
+    const t = cs.playing;
+    if (!t) return;
+    t.stop = true; if (t.wake) t.wake();
+    Voice.stop();
+    cs.playing = null; setPlayBtn();
+  }
+  function voiceError(e) {
+    const code = e && e.code;
+    if (code === 'stopped') return;
+    if (code === 'not_granted') { Voice.kind = 'denied'; renderVoice(); return; }
+    if (code === 'no_gesture') { toast('もう一度「読み上げ」を押してください'); return; }
+    if (code === 'rate_limited') { toast('読み上げの上限に達しました。少し時間をおいてください'); return; }
+    if (code === 'busy') { toast('ほかの音声機能が使われています'); return; }
+    toast('読み上げに失敗しました。答えはタップで表示できます');
+  }
+  async function playCards() {
+    if (cs.playing) { stopPlay(); return; }
+    if (!cs.deck.length) return;
+    await Voice.ready();
+    if (Voice.kind !== 'claude' && Voice.kind !== 'browser') { renderVoice(); return; }
+    const token = { stop: false, wake: null };
+    cs.playing = token; setPlayBtn();
+    try {
+      while (!token.stop) {
+        const c = cs.deck[cs.idx];
+        if (!c) break;
+        if (cs.cur !== c) showCard(false); else { cs.open = false; $('#cd-a-wrap').classList.remove('open'); }
+        await Voice.say(spoken(c.q)); if (token.stop) break;
+        await sleepFor(Number($('#cd-pause').value) * 1000, token); if (token.stop) break;
+        cs.open = true; $('#cd-a-wrap').classList.add('open');
+        await Voice.say(spoken(c.a)); if (token.stop) break;
+        await sleepFor(1500, token); if (token.stop) break;
+        cs.idx = (cs.idx + 1) % cs.deck.length;
+        showCard(false);
+      }
+    } catch (e) { voiceError(e); }
+    finally { if (cs.playing === token) cs.playing = null; setPlayBtn(); flushCards(); }
+  }
+  function fillCardAreas() { const ex = radioVal('cd-exam') || 'fp2'; $('#cd-new-area').innerHTML = EXAMS[ex].areas.map((a) => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join(''); }
+  let cardsSig = null;
+  function renderCards() {
+    if (!S.loaded.cards || !S.loaded.cardStats) return;
+    const mine = myCards().sort((a, b) => num(b.createdAt) - num(a.createdAt));
+    $('#cd-mine-sum').textContent = `自分のカード（${mine.length}枚）`;
+    $('#cd-mine').innerHTML = mine.length ? mine.map((c) => `<li class="logitem"><span class="swatch" style="background:${EXAMS[c.exam].color}"></span><div class="li-main"><div class="li-area">${esc(c.q)}</div><div class="li-sub">${esc(c.a)}</div></div><span></span><button type="button" class="icon-btn" data-del-card="${esc(c.id)}" aria-label="このカードを削除">×</button></li>`).join('') : '<li class="empty">まだありません。</li>';
+    const sig = mine.map((c) => c.id).sort().join('|');
+    if (!cs.built || sig !== cardsSig) { cardsSig = sig; buildDeck(cs.built); }
+    else updatePos();
+  }
+  function initCards() {
+    fillCardAreas();
+    document.querySelectorAll('input[name="cd-exam"]').forEach((r) => r.addEventListener('change', fillCardAreas));
+    $('#cd-deck').addEventListener('change', () => { stopPlay(); buildDeck(false); });
+    $('#cd-shuffle').addEventListener('change', () => { stopPlay(); buildDeck(false); });
+    $('#cd-rate').addEventListener('change', () => { if (Voice.kind === 'claude' && Voice.tts && Voice.tts.setRate) Voice.tts.setRate(Voice.rate()).catch(() => {}); });
+    $('#cd-prev').addEventListener('click', () => { stopPlay(); step(-1); });
+    $('#cd-next').addEventListener('click', () => { stopPlay(); step(1); });
+    $('#cd-play').addEventListener('click', playCards);
+    const reveal = () => { if (!cs.cur) return; cs.open = !cs.open; $('#cd-a-wrap').classList.toggle('open', cs.open); $('#cd-a-wrap').setAttribute('aria-label', cs.open ? '答え' : '答えを見る'); };
+    $('#cd-a-wrap').addEventListener('click', reveal);
+    $('#cd-a-wrap').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); } });
+    $('#cd-know').addEventListener('click', () => rateCard(true));
+    $('#cd-unknown').addEventListener('click', () => rateCard(false));
+    $('#cd-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideErr('cd');
+      const q = $('#cd-new-q').value.trim(), a = $('#cd-new-a').value.trim();
+      if (!q || !a) return showErr('cd', '問いと答えの両方を入れてください。');
+      const exam = radioVal('cd-exam') || 'fp2';
+      const ok = await write(() => STORE.add('cards', { exam, area: $('#cd-new-area').value, q: q.slice(0, 300), a: a.slice(0, 300), createdAt: Date.now() }), 'カードを足しました');
+      if (ok) { $('#cd-new-q').value = ''; $('#cd-new-a').value = ''; }
+    });
+    document.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-del-card]');
+      if (!b) return;
+      const c = S.cards.find((x) => x.id === b.dataset.delCard);
+      if (c && (await confirmBox(`カード「${c.q.slice(0, 30)}」を削除します。`))) await write(() => STORE.remove('cards/' + c.id), '削除しました');
+    });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { stopPlay(); flushCards(); } });
+    Voice.ready();
+  }
+
   /* ===================== routing & events ===================== */
   function route() {
     const h = (location.hash || '').replace('#', '');
+    const prev = ui.view;
     ui.view = VIEWS.includes(h) ? h : 'today';
+    if (prev === 'cards' && ui.view !== 'cards') { stopPlay(); flushCards(); }
     for (const v of VIEWS) {
       $('#view-' + v).hidden = v !== ui.view;
       const t = $('#tab-' + v); t.setAttribute('aria-selected', String(v === ui.view)); t.tabIndex = v === ui.view ? 0 : -1;
@@ -1438,6 +1770,7 @@ dialog::backdrop { background: var(--overlay); }
 
   function initUI() {
     setupDrillControls();
+    initCards();
     document.addEventListener('change', (e) => {
       if (e.target.name === 'dr-exam') { drill.exam = e.target.value; fillTopics(); newQuestion(); }
       if (e.target.id === 'dr-topic') newQuestion();
@@ -1536,7 +1869,7 @@ dialog::backdrop { background: var(--overlay); }
   function subscribeAll() {
     const fresh = new Set();
     const timer = setTimeout(() => { if (!S.synced) { S.stale = true; renderSync(); } }, 10000);
-    const mark = (key, meta) => { if (meta && meta.fromCache) return; fresh.add(key); if (fresh.size >= 3 && !S.synced) { S.synced = true; S.stale = false; clearTimeout(timer); renderSync(); } };
+    const mark = (key, meta) => { if (meta && meta.fromCache) return; fresh.add(key); if (fresh.size >= 5 && !S.synced) { S.synced = true; S.stale = false; clearTimeout(timer); renderSync(); } };
     const onErr = (e) => {
       const code = e && e.code;
       if (code === 'revoked' || code === 'not_granted') S.readOnly = true;
@@ -1546,6 +1879,8 @@ dialog::backdrop { background: var(--overlay); }
     STORE.subscribe('exams', (rows, meta) => { S.exams = Object.fromEntries(rows.map((r) => [r.id, r])); S.loaded.exams = true; mark('exams', meta); schedule(); }, onErr);
     STORE.subscribe('logs', (rows, meta) => { S.logs = rows.filter((r) => r.date && r.exam); S.loaded.logs = true; mark('logs', meta); schedule(); }, onErr);
     STORE.subscribeDoc('meta/plan', (data, meta) => { S.plan = data; S.loaded.plan = true; mark('plan', meta); schedule(); }, onErr);
+    STORE.subscribe('cards', (rows, meta) => { S.cards = rows; S.loaded.cards = true; mark('cards', meta); schedule(); }, onErr);
+    STORE.subscribe('cardStats', (rows, meta) => { S.cardStats = Object.fromEntries(rows.map((r) => [r.id, r])); S.loaded.cardStats = true; mark('cardStats', meta); schedule(); }, onErr);
   }
 
   async function boot() {
