@@ -1,0 +1,1599 @@
+<title>完済コックピット</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@700&display=swap">
+<style>
+:root {
+  /* Layout: sticky header + tab row over one column of panels; repayment ledgers read like a bank passbook in a fixed-width UD face */
+  --bg: #edf2f0;
+  --surface: #fbfdfc;
+  --surface-2: #f1f5f3;
+  --ink: #13212c;
+  --ink-2: #44515b;
+  --muted: #6a7680;
+  --rule: #d5dfda;
+  --accent: #1b5e74;
+  --accent-ink: #ffffff;
+  --accent-soft: #d2e4ea;
+  --stamp: #c63a2f;
+  --gain-ink: #1d5ca8;
+  --loss-ink: #b1261e;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --pos: #2a78d6;
+  --neg: #e34948;
+  --good-ink: #146c2e;
+  --good-bg: #dff0e3;
+  --warn-ink: #774800;
+  --warn-bg: #fcefd2;
+  --crit-ink: #a3261f;
+  --crit-bg: #fae1de;
+  --grid: #e1e8e4;
+  --axis: #bdc8c3;
+  --overlay: rgba(10, 20, 26, 0.45);
+  --shadow: 0 6px 20px rgba(19, 33, 44, 0.12);
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+  --font-body: "BIZ UDPGothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+  --font-data: "BIZ UDGothic", "BIZ UDPGothic", "Hiragino Sans", ui-monospace, monospace;
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1417; --surface: #151d21; --surface-2: #1b252a; --ink: #e7eef0; --ink-2: #b3bfc4; --muted: #8b979e;
+    --rule: #29363c; --accent: #62b4d0; --accent-ink: #062530; --accent-soft: #19363f; --stamp: #f06b5e;
+    --gain-ink: #86b8f2; --loss-ink: #ff8f85;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --pos: #3987e5; --neg: #e66767;
+    --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
+    --grid: #223036; --axis: #36464d; --overlay: rgba(0, 0, 0, 0.6); --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1417; --surface: #151d21; --surface-2: #1b252a; --ink: #e7eef0; --ink-2: #b3bfc4; --muted: #8b979e;
+  --rule: #29363c; --accent: #62b4d0; --accent-ink: #062530; --accent-soft: #19363f; --stamp: #f06b5e;
+  --gain-ink: #86b8f2; --loss-ink: #ff8f85;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --pos: #3987e5; --neg: #e66767;
+  --good-ink: #7fd694; --good-bg: #16301f; --warn-ink: #f5c060; --warn-bg: #33270d; --crit-ink: #ff9a90; --crit-bg: #3a1a17;
+  --grid: #223036; --axis: #36464d; --overlay: rgba(0, 0, 0, 0.6); --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.65; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.wrap { width: 100%; max-width: 980px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: var(--surface); border-bottom: 1px solid var(--rule); }
+.top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px 2px; }
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+h1 { margin: 0; font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
+.brand small { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
+.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-bottom: -1px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { appearance: none; background: none; border: 0; border-bottom: 3px solid transparent; color: var(--ink-2); font: inherit; font-weight: 700; font-size: 0.92rem; padding: 10px 11px 9px; white-space: nowrap; cursor: pointer; min-height: 44px; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; border-radius: 6px; }
+
+/* layout */
+main.wrap { display: grid; gap: 16px; padding-block: 16px 64px; }
+.view { display: grid; gap: 16px; min-width: 0; }
+.stack { display: grid; gap: 16px; }
+.grid-2 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px; min-width: 0; }
+.panel > h2, .panel-head h2 { margin: 0 0 12px; font-family: var(--font-display); font-size: 1.02rem; font-weight: 700; letter-spacing: 0.03em; text-wrap: balance; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.panel-head h2 { margin: 0; }
+.sub-h { font-family: var(--font-display); font-size: 0.92rem; margin: 18px 0 10px; }
+.muted { color: var(--muted); }
+.small { font-size: 0.82rem; }
+.hint { color: var(--ink-2); font-size: 0.8rem; margin: 12px 0 0; }
+.empty { color: var(--ink-2); margin: 0; }
+.lead { margin: 0 0 6px; }
+.banner { margin: 0; border-radius: var(--radius); padding: 12px 14px; font-size: 0.88rem; background: var(--warn-bg); color: var(--warn-ink); }
+.banner.info { background: var(--accent-soft); color: var(--ink); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.gain { color: var(--gain-ink); }
+.loss { color: var(--loss-ink); }
+
+/* chips & buttons */
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; white-space: nowrap; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--rule); line-height: 1.6; }
+.chip.good { background: var(--good-bg); color: var(--good-ink); border-color: transparent; }
+.chip.warn { background: var(--warn-bg); color: var(--warn-ink); border-color: transparent; }
+.chip.crit { background: var(--crit-bg); color: var(--crit-ink); border-color: transparent; }
+.btn { appearance: none; border: 1px solid transparent; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font: inherit; font-weight: 700; font-size: 0.95rem; padding: 10px 18px; min-height: 44px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-align: center; }
+.btn:hover { filter: brightness(1.07); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.ghost { background: transparent; color: var(--accent); border-color: var(--rule); }
+.btn.danger { background: var(--crit-bg); color: var(--crit-ink); }
+.btn.small { min-height: 36px; padding: 6px 12px; font-size: 0.85rem; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.quick { display: flex; gap: 10px; flex-wrap: wrap; }
+.quick .btn { flex: 1 1 160px; }
+.chip-btn { appearance: none; border: 1px solid var(--rule); background: var(--surface-2); color: var(--ink); font: inherit; font-weight: 700; font-size: 0.85rem; border-radius: 999px; padding: 6px 14px; min-height: 36px; cursor: pointer; }
+.chip-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.icon-btn { appearance: none; border: 0; background: none; color: var(--muted); font: inherit; font-size: 1.1rem; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; }
+.icon-btn:hover { background: var(--surface-2); color: var(--crit-ink); }
+.icon-btn:focus-visible { outline: 2px solid var(--accent); }
+
+/* forms */
+.form-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); }
+.form-grid .span { grid-column: 1 / -1; }
+.field { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.field > label, .field > .label, .label { font-size: 0.8rem; font-weight: 700; color: var(--ink-2); }
+input, select, textarea { font: inherit; font-size: 16px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 12px; min-height: 44px; width: 100%; min-width: 0; }
+textarea { font-family: var(--font-data); font-size: 13px; line-height: 1.5; resize: vertical; }
+input::placeholder { color: var(--muted); opacity: 1; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+input[type="date"] { -webkit-appearance: none; appearance: none; display: block; }
+input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--surface-2); max-width: 100%; justify-self: start; }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.seg label { padding: 8px 14px; min-height: 42px; display: inline-flex; align-items: center; font-weight: 700; font-size: 0.9rem; color: var(--ink-2); cursor: pointer; border-left: 1px solid var(--rule); white-space: nowrap; }
+.seg label:first-of-type { border-left: 0; }
+.seg input:checked + label { background: var(--accent); color: var(--accent-ink); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: -3px; }
+.filter-row { overflow-x: auto; scrollbar-width: none; }
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-row .seg { flex-wrap: nowrap; }
+.form-error { margin: 0; color: var(--crit-ink); background: var(--crit-bg); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; }
+.preview { margin: 0; font-weight: 700; color: var(--ink-2); min-height: 1.6em; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* overview */
+.hero { display: grid; gap: 2px; padding: 4px 2px 0; }
+.eyebrow { margin: 0; font-size: 0.82rem; font-weight: 700; color: var(--ink-2); letter-spacing: 0.06em; }
+.figure { margin: 0; font-size: clamp(3rem, 11vw, 3.75rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.figure .pre { font-size: 0.4em; margin-right: 0.25em; color: var(--ink-2); letter-spacing: 0; }
+.hero .sub { margin: 6px 0 0; color: var(--ink-2); max-width: 62ch; }
+.meters { display: grid; gap: 18px; }
+.meter-row { display: grid; gap: 6px; }
+.meter-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.m-name { font-weight: 700; }
+.meter { position: relative; height: 12px; border-radius: 999px; background: var(--accent-soft); }
+.meter .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: var(--accent); transition: width 0.4s ease; }
+.meter .pace { position: absolute; top: -4px; bottom: -4px; width: 2px; border-radius: 1px; background: var(--ink); }
+.meter-foot { display: flex; justify-content: space-between; gap: 4px 10px; flex-wrap: wrap; font-size: 0.8rem; color: var(--ink-2); }
+.tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
+.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 2px; align-content: start; min-width: 0; }
+.t-label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+.t-value { font-size: 1.4rem; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+.t-sub { font-size: 0.76rem; color: var(--muted); line-height: 1.5; }
+.impact-lead { margin: 0 0 6px; font-size: 1.02rem; }
+#ov-impact p, #pnl-impact p { margin: 0 0 6px; }
+
+/* debts */
+.debt { position: relative; }
+.debt-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.debt-head h2 { margin: 0; flex: 1 1 auto; min-width: 0; font-family: var(--font-display); font-size: 1.05rem; }
+.debt-balance { display: grid; margin-bottom: 10px; }
+.debt-balance .label { font-size: 0.78rem; color: var(--ink-2); font-weight: 700; }
+.debt-balance .big { font-size: 2rem; font-weight: 700; line-height: 1.2; }
+.debt-balance .sub { font-size: 0.78rem; color: var(--muted); }
+.kv { margin: 0; display: grid; }
+.kv > div { display: grid; grid-template-columns: minmax(6.5em, 9em) 1fr; gap: 8px; padding: 8px 0; border-top: 1px solid var(--grid); }
+.kv dt { color: var(--ink-2); font-size: 0.82rem; font-weight: 700; }
+.kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.crit-text { color: var(--crit-ink); font-weight: 700; }
+.stamp { position: absolute; top: 52px; right: 18px; width: 66px; height: 66px; border: 2.5px solid var(--stamp); border-radius: 50%; color: var(--stamp); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; letter-spacing: 0.12em; transform: rotate(-14deg); opacity: 0.9; pointer-events: none; }
+details { border-top: 1px solid var(--grid); margin-top: 8px; }
+summary { cursor: pointer; padding: 10px 0; font-weight: 700; color: var(--accent); font-size: 0.88rem; list-style: none; display: flex; align-items: center; gap: 8px; }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform 0.15s; }
+details[open] > summary::before { transform: rotate(45deg); }
+summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.table-scroll { overflow-x: auto; }
+.ledger { width: 100%; border-collapse: collapse; font-family: var(--font-data); font-size: 0.84rem; font-variant-numeric: tabular-nums; }
+.ledger th { font-family: var(--font-body); font-size: 0.72rem; font-weight: 700; color: var(--muted); letter-spacing: 0.06em; text-align: left; padding: 6px 8px; border-bottom: 1.5px solid var(--axis); white-space: nowrap; }
+.ledger td { padding: 7px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+.ledger .num { text-align: right; }
+.ledger tr.opening td { color: var(--ink-2); }
+.ledger td.act { padding: 0 0 0 4px; width: 40px; }
+.compare { margin: 0; display: grid; }
+.compare > div { padding: 8px 0; border-top: 1px solid var(--grid); display: grid; gap: 2px; }
+.compare > div:first-child { border-top: 0; }
+.compare dt { font-size: 0.8rem; color: var(--ink-2); font-weight: 700; }
+.compare dd { margin: 0; overflow-wrap: anywhere; }
+.sim-result { margin-top: 12px; }
+
+/* charts */
+.chart { position: relative; min-width: 0; }
+.chart svg { display: block; max-width: 100%; height: auto; overflow: visible; }
+.chart:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+.chart-empty { margin: 0; min-height: 150px; display: grid; place-items: center; color: var(--muted); border: 1px dashed var(--rule); border-radius: 10px; text-align: center; padding: 16px; }
+.ax text { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.goal-line { stroke: var(--ink-2); stroke-width: 1; }
+.goal-text { fill: var(--ink-2); font-size: 11px; font-weight: 700; font-family: var(--font-body); }
+.cross { stroke: var(--ink-2); stroke-width: 1; }
+.line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.line.proj { stroke-dasharray: 5 4; }
+.dot { stroke: var(--surface); stroke-width: 2; }
+.overlay { cursor: crosshair; touch-action: pan-y; }
+.hit { fill: transparent; }
+.band { cursor: default; outline: none; }
+.band .bar { transition: opacity 0.12s; }
+.band:hover .bar, .band:focus .bar { opacity: 0.72; }
+.band:focus-visible .hit { stroke: var(--accent); stroke-width: 2; }
+.val-label { fill: var(--ink); font-size: 11px; font-weight: 700; font-family: var(--font-body); }
+.tooltip { position: absolute; z-index: 3; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 10px; box-shadow: var(--shadow); padding: 8px 10px; font-size: 0.8rem; min-width: 150px; max-width: 230px; }
+.tt-date { color: var(--ink-2); font-size: 0.75rem; margin-bottom: 4px; font-weight: 700; }
+.tt-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tt-row b { font-variant-numeric: tabular-nums; font-size: 0.92rem; }
+.tt-name { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.key { display: inline-block; width: 14px; height: 2px; border-radius: 1px; flex: none; }
+.legend { display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: 0.82rem; color: var(--ink-2); margin: -2px 0 10px; }
+.lg { display: inline-flex; align-items: center; gap: 6px; }
+.legend-inline { font-size: 0.8rem; color: var(--ink-2); display: inline-flex; align-items: center; gap: 4px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-left: 6px; }
+.sw.pos { background: var(--pos); }
+.sw.neg { background: var(--neg); }
+
+/* p&l list */
+.entries { list-style: none; margin: 0; padding: 0; display: grid; }
+.entry { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 2px 8px; padding: 9px 0; border-top: 1px solid var(--grid); }
+.entry:first-child { border-top: 0; }
+.e-main { display: flex; align-items: center; gap: 6px 8px; flex-wrap: wrap; min-width: 0; }
+.e-date { font-family: var(--font-data); font-size: 0.82rem; color: var(--ink-2); }
+.e-label { font-weight: 700; overflow-wrap: anywhere; }
+.e-amt { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.e-sub { grid-column: 1 / 2; font-size: 0.78rem; color: var(--muted); overflow-wrap: anywhere; }
+
+/* bonus */
+.alloc { display: grid; gap: 10px; }
+.alloc-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 9.5em); align-items: center; gap: 10px; }
+.alloc-row label { font-weight: 700; }
+.alloc-row .note { display: block; font-size: 0.76rem; color: var(--muted); font-weight: 400; }
+.left-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 12px 0; padding-top: 10px; border-top: 1.5px solid var(--axis); font-weight: 700; }
+.bn-debt h3 { font-size: 0.95rem; margin: 14px 0 2px; display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.notes { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 0.88rem; color: var(--ink-2); }
+
+/* dialog & toast */
+dialog { border: 1px solid var(--rule); border-radius: 16px; background: var(--surface); color: var(--ink); padding: 0; width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; }
+dialog::backdrop { background: var(--overlay); }
+.dlg { padding: 20px; display: grid; gap: 14px; margin: 0; }
+.dlg h2 { margin: 0; font-family: var(--font-display); font-size: 1.1rem; }
+.dlg p { margin: 0; }
+.dlg-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.dlg-actions .spacer { flex: 1; }
+#toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px); opacity: 0; background: var(--ink); color: var(--surface); padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 0.9rem; transition: opacity 0.2s, transform 0.2s; z-index: 20; pointer-events: none; max-width: calc(100vw - 32px); text-align: center; }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 480px) {
+  .kv > div { grid-template-columns: 1fr; gap: 0; }
+}
+@media (max-width: 420px) {
+  .alloc-row { grid-template-columns: minmax(0, 1fr) minmax(0, 8em); }
+  .debt-balance .big { font-size: 1.75rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+
+<header class="top">
+  <div class="wrap top-row">
+    <div class="brand"><h1>完済コックピット</h1><small id="today-label"></small></div>
+    <span id="sync" class="chip" role="status">読み込み中</span>
+  </div>
+  <div class="wrap">
+    <nav class="tabs" role="tablist" aria-label="画面の切り替え">
+      <button type="button" class="tab" role="tab" id="tab-overview" data-tab="overview" aria-controls="view-overview" aria-selected="true">概要</button>
+      <button type="button" class="tab" role="tab" id="tab-debts" data-tab="debts" aria-controls="view-debts" aria-selected="false" tabindex="-1">返済</button>
+      <button type="button" class="tab" role="tab" id="tab-pnl" data-tab="pnl" aria-controls="view-pnl" aria-selected="false" tabindex="-1">特別損益</button>
+      <button type="button" class="tab" role="tab" id="tab-bonus" data-tab="bonus" aria-controls="view-bonus" aria-selected="false" tabindex="-1">ボーナス</button>
+      <button type="button" class="tab" role="tab" id="tab-data" data-tab="data" aria-controls="view-data" aria-selected="false" tabindex="-1">データ</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p id="banner" class="banner" hidden></p>
+
+  <section class="view" id="view-overview" role="tabpanel" aria-labelledby="tab-overview">
+    <div class="hero" id="ov-hero">
+      <p class="eyebrow">読み込み中</p>
+      <p class="figure">¥—</p>
+    </div>
+    <div class="panel">
+      <h2>目標までの進み具合</h2>
+      <div class="meters" id="ov-meters"><p class="empty">借入を読み込んでいます…</p></div>
+      <p class="hint">黒い縦線は今日時点の目安です（開始日から目標日まで同じペースで返した場合）。</p>
+    </div>
+    <div class="tiles" id="ov-tiles"></div>
+    <div class="panel" id="ov-impact"><h2>今月の特別損益と返済</h2><p class="empty">読み込み中…</p></div>
+    <div class="quick">
+      <button type="button" class="btn" data-go="debts" data-focus="pay-amount">＋ 返済を記録</button>
+      <button type="button" class="btn ghost" data-go="pnl" data-focus="pnl-invest">＋ 特別損益を記録</button>
+    </div>
+  </section>
+
+  <section class="view" id="view-debts" role="tabpanel" aria-labelledby="tab-debts" hidden>
+    <div class="panel">
+      <h2>返済を記録</h2>
+      <form id="pay-form" class="form-grid" novalidate>
+        <div class="field"><label for="pay-debt">借入</label><select id="pay-debt"></select></div>
+        <div class="field"><label for="pay-date">返済日</label><input id="pay-date" type="date"></div>
+        <div class="field"><label for="pay-amount">返済額（円）</label><input id="pay-amount" inputmode="numeric" autocomplete="off" placeholder="例：20000"></div>
+        <div class="field"><span class="label" id="pay-kind-label">種類</span>
+          <div class="seg" role="radiogroup" aria-labelledby="pay-kind-label">
+            <input type="radio" name="pay-kind" id="pay-kind-regular" value="regular" checked><label for="pay-kind-regular">約定返済</label>
+            <input type="radio" name="pay-kind" id="pay-kind-extra" value="extra"><label for="pay-kind-extra">繰上返済</label>
+            <input type="radio" name="pay-kind" id="pay-kind-bonus" value="bonus"><label for="pay-kind-bonus">ボーナス</label>
+          </div>
+        </div>
+        <div class="field"><label for="pay-after">返済後の残高（明細にあれば）</label><input id="pay-after" inputmode="numeric" autocomplete="off" placeholder="空欄なら自動で計算"></div>
+        <div class="field"><label for="pay-note">メモ</label><input id="pay-note" autocomplete="off" maxlength="100" placeholder="任意"></div>
+        <p class="form-error span" id="pay-error" hidden></p>
+        <div class="actions span"><button type="submit" class="btn">記録する</button></div>
+      </form>
+    </div>
+    <div class="stack" id="debt-cards"></div>
+    <div class="panel">
+      <h2>繰上返済シミュレーション</h2>
+      <div class="form-grid">
+        <div class="field"><label for="sim-debt">借入</label><select id="sim-debt"></select></div>
+        <div class="field"><label for="sim-amount">繰上返済する額（円）</label><input id="sim-amount" inputmode="numeric" autocomplete="off" placeholder="例：30000"></div>
+        <div class="presets span">
+          <button type="button" class="chip-btn" data-sim="10000">1万円</button>
+          <button type="button" class="chip-btn" data-sim="30000">3万円</button>
+          <button type="button" class="chip-btn" data-sim="50000">5万円</button>
+          <button type="button" class="chip-btn" data-sim="100000">10万円</button>
+        </div>
+      </div>
+      <div id="sim-result" class="sim-result"></div>
+    </div>
+    <div class="panel">
+      <h2>残高の推移</h2>
+      <div class="legend" id="bal-legend"></div>
+      <div class="chart" id="bal-chart" tabindex="0" aria-label="借入残高の推移グラフ。左右の矢印キーで1週間ずつ移動できます。"></div>
+      <details><summary>表で見る</summary><div class="table-scroll" id="bal-table"></div></details>
+    </div>
+    <div><button type="button" class="btn ghost" id="add-debt">＋ 借入を追加</button></div>
+  </section>
+
+  <section class="view" id="view-pnl" role="tabpanel" aria-labelledby="tab-pnl" hidden>
+    <div class="panel">
+      <h2>特別損益を記録</h2>
+      <form id="pnl-form" class="form-grid" novalidate>
+        <div class="field span"><span class="label" id="pnl-cat-label">区分</span>
+          <div class="seg" role="radiogroup" aria-labelledby="pnl-cat-label">
+            <input type="radio" name="pnl-cat" id="pnl-cat-gamble" value="gamble" checked><label for="pnl-cat-gamble">ギャンブル</label>
+            <input type="radio" name="pnl-cat" id="pnl-cat-trade" value="trade"><label for="pnl-cat-trade">デイトレ</label>
+            <input type="radio" name="pnl-cat" id="pnl-cat-other" value="other"><label for="pnl-cat-other">その他</label>
+          </div>
+        </div>
+        <div class="field"><label for="pnl-date">日付</label><input id="pnl-date" type="date"></div>
+        <div class="field"><label for="pnl-label">種別</label><input id="pnl-label" list="pnl-label-list" autocomplete="off" maxlength="40" placeholder="例：パチンコ"><datalist id="pnl-label-list"></datalist></div>
+        <div class="field" data-for="gamble"><label for="pnl-invest">投入額（円）</label><input id="pnl-invest" inputmode="numeric" autocomplete="off" placeholder="例：10000"></div>
+        <div class="field" data-for="gamble"><label for="pnl-payout">回収額（円）</label><input id="pnl-payout" inputmode="numeric" autocomplete="off" placeholder="0円なら空欄"></div>
+        <div class="field" data-for="direct" hidden><label for="pnl-amount">金額（円）</label><input id="pnl-amount" inputmode="numeric" autocomplete="off" placeholder="例：5000"></div>
+        <div class="field" data-for="direct" hidden><span class="label" id="pnl-sign-label">結果</span>
+          <div class="seg" role="radiogroup" aria-labelledby="pnl-sign-label">
+            <input type="radio" name="pnl-sign" id="pnl-sign-gain" value="gain"><label for="pnl-sign-gain">利益</label>
+            <input type="radio" name="pnl-sign" id="pnl-sign-loss" value="loss" checked><label for="pnl-sign-loss">損失</label>
+          </div>
+        </div>
+        <div class="field span"><label for="pnl-note">メモ</label><input id="pnl-note" autocomplete="off" maxlength="200" placeholder="任意（店名、ルールを守れたか など）"></div>
+        <p class="preview span" id="pnl-preview" aria-live="polite"></p>
+        <p class="form-error span" id="pnl-error" hidden></p>
+        <div class="actions span"><button type="submit" class="btn">記録する</button></div>
+      </form>
+    </div>
+    <div class="filter-row">
+      <div class="seg" role="radiogroup" aria-label="集計する期間">
+        <input type="radio" name="pnl-range" id="pnl-range-month" value="month" checked><label for="pnl-range-month">今月</label>
+        <input type="radio" name="pnl-range" id="pnl-range-prev" value="prev"><label for="pnl-range-prev">先月</label>
+        <input type="radio" name="pnl-range" id="pnl-range-3m" value="3m"><label for="pnl-range-3m">3か月</label>
+        <input type="radio" name="pnl-range" id="pnl-range-year" value="year"><label for="pnl-range-year">今年</label>
+        <input type="radio" name="pnl-range" id="pnl-range-all" value="all"><label for="pnl-range-all">全期間</label>
+      </div>
+    </div>
+    <div class="tiles" id="pnl-tiles"></div>
+    <div class="panel">
+      <div class="panel-head"><h2 id="pnl-chart-title">損益の推移</h2><span class="legend-inline"><span class="sw pos"></span>プラス<span class="sw neg"></span>マイナス</span></div>
+      <div class="chart" id="pnl-chart"></div>
+      <details><summary>表で見る</summary><div class="table-scroll" id="pnl-table"></div></details>
+    </div>
+    <div class="panel" id="pnl-impact"></div>
+    <div class="grid-2">
+      <div class="panel"><h2>種別ごとの成績</h2><div class="table-scroll" id="pnl-bylabel"></div></div>
+      <div class="panel"><h2>記録</h2><ul class="entries" id="pnl-list"></ul></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-bonus" role="tabpanel" aria-labelledby="tab-bonus" hidden>
+    <div class="panel">
+      <h2>ボーナスの使い道を決める</h2>
+      <div class="form-grid">
+        <div class="field"><label for="bn-date">支給日</label><input id="bn-date" type="date"></div>
+        <div class="field"><label for="bn-net">手取り額（円）</label><input id="bn-net" inputmode="numeric" autocomplete="off" placeholder="例：450000"></div>
+        <div class="field"><label for="bn-buffer">手元に残す額（円）</label><input id="bn-buffer" inputmode="numeric" autocomplete="off" value="50000"></div>
+        <div class="field"><label for="bn-study">学習費（試験代・教材）</label><input id="bn-study" inputmode="numeric" autocomplete="off" placeholder="例：15000"></div>
+      </div>
+      <h3 class="sub-h">返済に回す額</h3>
+      <div class="alloc" id="bn-alloc"><p class="empty">借入を読み込んでいます…</p></div>
+      <div class="left-row"><span>残り（自由に使える額）</span><span id="bn-left">¥0</span></div>
+      <p class="form-error" id="bn-error" hidden></p>
+      <div class="actions">
+        <button type="button" class="btn ghost" id="bn-suggest">おすすめ配分を入れる</button>
+        <button type="button" class="btn ghost" id="bn-save">配分を保存</button>
+        <button type="button" class="btn" id="bn-record">この配分で返済を記録</button>
+      </div>
+      <p class="hint">おすすめ配分は、手取りから「手元に残す額」と「学習費」を引いた残りを、金利の高い借入から目標額まで順に割り当てます。</p>
+    </div>
+    <div class="panel"><h2>配分したときの変化</h2><div id="bn-result"></div></div>
+  </section>
+
+  <section class="view" id="view-data" role="tabpanel" aria-labelledby="tab-data" hidden>
+    <div class="panel"><h2>保存先</h2><div id="data-status"></div></div>
+    <div class="panel" id="migrate-panel" hidden>
+      <h2>この端末の一時データ</h2>
+      <p class="small">クラウドに接続できなかったときに、この端末だけに保存した記録が <b id="migrate-count">0件</b> あります。</p>
+      <div class="actions"><button type="button" class="btn" id="migrate">クラウドに移す</button></div>
+    </div>
+    <div class="panel">
+      <h2>書き出し</h2>
+      <p class="small">CSVはExcelでそのまま開けます（文字化けしない形式）。</p>
+      <div class="actions"><button type="button" class="btn ghost" id="exp-pay">返済の記録をCSVで保存</button><button type="button" class="btn ghost" id="exp-pnl">特別損益をCSVで保存</button></div>
+      <div id="exp-fallback" hidden>
+        <p class="hint">この環境ではファイルを保存できないため、内容を表示しています。コピーして使ってください。</p>
+        <label for="exp-text" class="sr">CSVの内容</label>
+        <textarea id="exp-text" rows="8" readonly></textarea>
+        <div class="actions"><button type="button" class="btn ghost" id="exp-copy">コピー</button></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>計算のしかた</h2>
+      <ul class="notes">
+        <li>利息は「残高 × 年利 × 日数 ÷ 365」で1円未満を切り捨てた概算です。実際の請求額はカード会社の明細で確認してください。</li>
+        <li>「返済後の残高」を入れた記録は、その値を正しい残高として以降を計算します。</li>
+        <li>完済予定は、毎月の返済額を返済日に払い続けた場合の見込みです。</li>
+        <li>「目安」は、開始日から目標日まで同じペースで返した場合に、今日までに返しているはずの額です。</li>
+        <li>口座番号・カード番号・暗証番号は入力しないでください。</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>すべて削除</h2>
+      <p class="small">借入・返済・特別損益・ボーナス配分の記録をすべて消します。元に戻せません。</p>
+      <div class="actions"><button type="button" class="btn danger" id="wipe">すべてのデータを削除</button></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="debt-dialog" aria-labelledby="dd-title">
+  <form id="debt-form" class="dlg" novalidate>
+    <h2 id="dd-title">借入を追加</h2>
+    <div class="form-grid">
+      <div class="field span"><label for="dd-name">名前</label><input id="dd-name" maxlength="40" autocomplete="off" placeholder="例：カードローン"></div>
+      <div class="field span"><span class="label" id="dd-kind-label">種類</span>
+        <div class="seg" role="radiogroup" aria-labelledby="dd-kind-label">
+          <input type="radio" name="dd-kind" id="dd-kind-loan" value="loan" checked><label for="dd-kind-loan">金融機関</label>
+          <input type="radio" name="dd-kind" id="dd-kind-family" value="family"><label for="dd-kind-family">家族・知人</label>
+        </div>
+      </div>
+      <div class="field"><label for="dd-opening">開始時点の残高（円）</label><input id="dd-opening" inputmode="numeric" autocomplete="off" placeholder="例：400000"></div>
+      <div class="field"><label for="dd-start">開始日</label><input id="dd-start" type="date"></div>
+      <div class="field"><label for="dd-rate">年利（%）</label><input id="dd-rate" inputmode="decimal" autocomplete="off" placeholder="わからなければ空欄"></div>
+      <div class="field"><label for="dd-monthly">毎月の返済額（円）</label><input id="dd-monthly" inputmode="numeric" autocomplete="off" placeholder="例：20000"></div>
+      <div class="field"><label for="dd-payday">返済日（毎月◯日）</label><input id="dd-payday" inputmode="numeric" autocomplete="off" placeholder="例：27"></div>
+      <div class="field"><label for="dd-goal">目標の返済額（円）</label><input id="dd-goal" inputmode="numeric" autocomplete="off" placeholder="例：400000"></div>
+      <div class="field"><label for="dd-goaldate">目標日</label><input id="dd-goaldate" type="date"></div>
+    </div>
+    <p class="hint">金利と毎月の返済額は、カード会社の会員ページや利用明細に載っています。</p>
+    <p class="form-error" id="dd-error" hidden></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn danger" id="dd-delete" hidden>この借入を削除</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn ghost" id="dd-cancel">キャンセル</button>
+      <button type="submit" class="btn">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="confirm-dialog" aria-labelledby="cf-title">
+  <div class="dlg">
+    <h2 id="cf-title">確認</h2>
+    <p id="cf-msg"></p>
+    <div class="dlg-actions"><span class="spacer"></span><button type="button" class="btn ghost" id="cf-cancel">やめる</button><button type="button" class="btn danger" id="cf-ok">削除する</button></div>
+  </div>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ===================== helpers ===================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const num = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+  const has = (v) => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
+  const fmtN = (n) => Math.round(Math.abs(n)).toLocaleString('ja-JP');
+  const yen = (n) => (Math.round(n) < 0 ? '−' : '') + '¥' + fmtN(n);
+  const sYen = (n) => { const r = Math.round(n); return (r > 0 ? '+' : r < 0 ? '−' : '±') + '¥' + fmtN(r); };
+  const pct = (r) => (Math.round(r * 1000) / 10).toFixed(1) + '%';
+  const pad = (n) => String(n).padStart(2, '0');
+  const f1 = (n) => n.toFixed(1);
+  const tone = (n) => (Math.round(n) > 0 ? 'gain' : Math.round(n) < 0 ? 'loss' : '');
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  const WD = '日月火水木金土';
+  const toHalf = (s) => String(s).replace(/[０-９．－]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+
+  /* ===================== dates (YYYY-MM-DD strings) ===================== */
+  function todayStr() { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+  function parseD(s) { const [y, m, d] = String(s).split('-').map(Number); return Date.UTC(y, m - 1, d); }
+  function fmtD(t) { const d = new Date(t); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; }
+  function daysBetween(a, b) { return Math.round((parseD(b) - parseD(a)) / 86400000); }
+  function addDays(s, n) { return fmtD(parseD(s) + n * 86400000); }
+  function daysInMonth(y, m0) { return new Date(Date.UTC(y, m0 + 1, 0)).getUTCDate(); }
+  function addMonths(s, n) { let [y, m, d] = s.split('-').map(Number); m = m - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return `${y}-${pad(m + 1)}-${pad(Math.min(d, daysInMonth(y, m)))}`; }
+  function paydayOnOrAfter(s, day) {
+    let [y, m] = s.split('-').map(Number); m -= 1;
+    for (let i = 0; i < 3; i++) {
+      const c = `${y}-${pad(m + 1)}-${pad(Math.min(day, daysInMonth(y, m)))}`;
+      if (c >= s) return c;
+      m += 1; if (m > 11) { m = 0; y += 1; }
+    }
+    return s;
+  }
+  function nextPayday(s, day) { let [y, m] = s.split('-').map(Number); if (m > 11) { m = 0; y += 1; } return `${y}-${pad(m + 1)}-${pad(Math.min(day, daysInMonth(y, m)))}`; }
+  const jpDate = (s) => { const [y, m, d] = s.split('-').map(Number); return `${y}年${m}月${d}日`; };
+  const jpMonth = (s) => { const [y, m] = s.split('-').map(Number); return `${y}年${m}月`; };
+  const md = (s) => { const [, m, d] = s.split('-').map(Number); return `${m}/${d}`; };
+  const mdw = (s) => `${md(s)}（${WD[new Date(parseD(s)).getUTCDay()]}）`;
+  const wareki = (s) => { const [y, m, d] = s.split('-').map(Number); return `R${y - 2018}.${pad(m)}.${pad(d)}`; };
+  function fiscalYearEnd(t) { const y = Number(t.slice(0, 4)); const mar = `${y}-03-31`; return t <= mar ? mar : `${y + 1}-03-31`; }
+
+  /* ===================== parsing ===================== */
+  function parseYen(v) {
+    if (v === null || v === undefined) return NaN;
+    let s = toHalf(String(v).trim()).replace(/[,，円¥￥\s]/g, '');
+    let mult = 1;
+    if (s.endsWith('万')) { mult = 10000; s = s.slice(0, -1); } else if (s.endsWith('千')) { mult = 1000; s = s.slice(0, -1); }
+    if (!/^-?\d+(\.\d+)?$/.test(s)) return NaN;
+    return Math.round(Number(s) * mult);
+  }
+  function parseRate(v) {
+    const s = toHalf(String(v ?? '').trim()).replace(/[%％\s]/g, '');
+    if (s === '') return null;
+    if (!/^\d+(\.\d+)?$/.test(s)) return NaN;
+    return Number(s);
+  }
+
+  /* ===================== finance engine ===================== */
+  // Walk a debt's payments in date order. Interest = balance x rate x days / 365 (floored).
+  function ledger(debt, payments) {
+    const rate = num(debt.annualRate) / 100;
+    const opening = num(debt.openingBalance);
+    let bal = opening, last = debt.startDate, interestPaid = 0;
+    const rows = [];
+    const ps = payments.filter((p) => p.debtId === debt.id && p.date)
+      .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : num(a.createdAt) - num(b.createdAt)));
+    for (const p of ps) {
+      const amount = num(p.amount);
+      const days = Math.max(0, daysBetween(last, p.date));
+      let interest, principal;
+      if (has(p.balanceAfter)) {
+        const after = Math.max(0, num(p.balanceAfter));
+        principal = bal - after; interest = amount - principal; bal = after;
+      } else {
+        const accrued = rate > 0 ? Math.floor((bal * rate * days) / 365) : 0;
+        interest = Math.min(accrued, amount);
+        principal = Math.min(amount - interest, bal);
+        bal -= principal;
+      }
+      interestPaid += Math.max(0, interest);
+      rows.push({ p, interest, principal, balance: bal });
+      if (p.date > last) last = p.date;
+    }
+    return { rows, balance: bal, repaid: Math.max(0, opening - bal), interestPaid, lastDate: last };
+  }
+
+  // Project monthly payments on the pay day until the balance reaches zero.
+  function simulate(debt, balance, lastDate, today, opts = {}) {
+    const rate = num(debt.annualRate) / 100;
+    const monthly = has(opts.monthly) ? num(opts.monthly) : num(debt.monthlyPayment);
+    const day = has(debt.payDay) ? Math.min(31, Math.max(1, num(debt.payDay))) : Number(today.slice(8, 10));
+    let bal = balance - num(opts.extra);
+    const points = [{ date: today, balance: Math.max(0, bal) }];
+    if (bal <= 0) return { ok: true, payoffDate: today, months: 0, totalInterest: 0, lastPayment: 0, points };
+    if (!(monthly > 0)) return { ok: false, reason: 'no-monthly', points };
+    let from = lastDate;
+    let pay = paydayOnOrAfter(lastDate >= today ? addDays(lastDate, 1) : today, day);
+    let months = 0, totalInterest = 0;
+    while (months < 600) {
+      const days = Math.max(0, daysBetween(from, pay));
+      const interest = rate > 0 ? Math.floor((bal * rate * days) / 365) : 0;
+      if (monthly <= interest) return { ok: false, reason: 'interest-exceeds', interest, points };
+      months += 1; totalInterest += interest;
+      if (bal + interest <= monthly) {
+        points.push({ date: pay, balance: 0 });
+        return { ok: true, payoffDate: pay, months, totalInterest, lastPayment: bal + interest, points };
+      }
+      bal -= monthly - interest;
+      points.push({ date: pay, balance: bal });
+      from = pay; pay = nextPayday(pay, day);
+    }
+    return { ok: false, reason: 'too-long', points };
+  }
+
+  // Equal monthly payment that brings repayments up to the goal by the goal date.
+  function requiredMonthly(debt, L, today) {
+    const remaining = Math.max(0, Math.min(num(debt.goalAmount) - L.repaid, L.balance));
+    if (remaining <= 0) return { amount: 0, n: 0, remaining: 0 };
+    const day = has(debt.payDay) ? Math.min(31, Math.max(1, num(debt.payDay))) : Number(today.slice(8, 10));
+    let pay = paydayOnOrAfter(L.lastDate >= today ? addDays(L.lastDate, 1) : today, day);
+    let n = 0;
+    while (debt.goalDate && pay <= debt.goalDate && n < 600) { n += 1; pay = nextPayday(pay, day); }
+    if (n === 0) return { amount: remaining, n: 0, remaining, lump: true };
+    const r = num(debt.annualRate) / 100 / 12;
+    const target = L.balance - remaining;
+    let P;
+    if (r <= 0) P = remaining / n;
+    else { const f = Math.pow(1 + r, n); P = ((L.balance * f - target) * r) / (f - 1); }
+    return { amount: Math.ceil(P / 100) * 100, n, remaining };
+  }
+
+  function pace(debt, repaid, today) {
+    const goal = num(debt.goalAmount);
+    const total = Math.max(1, daysBetween(debt.startDate, debt.goalDate));
+    const el = Math.min(Math.max(daysBetween(debt.startDate, today), 0), total);
+    const ratio = el / total;
+    const expected = Math.round(goal * ratio);
+    const status = goal > 0 && repaid >= goal ? 'done' : repaid >= expected ? 'on' : 'behind';
+    return { ratio, expected, diff: repaid - expected, status };
+  }
+
+  const priority = (d) => (has(d.annualRate) ? num(d.annualRate) : d.kind === 'family' ? 0 : 99);
+  function byPriority(a, b) {
+    return priority(b) - priority(a)
+      || (a.kind === 'family' ? 1 : 0) - (b.kind === 'family' ? 1 : 0)
+      || String(a.goalDate || '').localeCompare(String(b.goalDate || ''));
+  }
+  function topDebt(debts, L) { return debts.filter((d) => L[d.id] && L[d.id].balance > 0).sort(byPriority)[0] || null; }
+
+  // What the amount would do as a prepayment on the highest-priority debt.
+  function impact(amount, D) {
+    const d = topDebt(D.debts, D.L);
+    if (!d) return null;
+    const L = D.L[d.id];
+    const amt = Math.abs(amount);
+    const res = { debt: d, amount: amt, rateKnown: has(d.annualRate), monthly: num(d.monthlyPayment) };
+    if (res.monthly > 0) res.times = amt / res.monthly;
+    res.coversAll = amt >= L.balance;
+    const base = simulate(d, L.balance, L.lastDate, D.today);
+    const alt = simulate(d, L.balance, L.lastDate, D.today, { extra: amt });
+    if (base.ok && alt.ok) { res.sooner = base.months - alt.months; res.saved = base.totalInterest - alt.totalInterest; }
+    return res;
+  }
+
+  function rangeBounds(range, today, all) {
+    const [y, m] = today.split('-').map(Number);
+    const first = (yy, mm) => `${yy}-${pad(mm)}-01`;
+    if (range === 'prev') {
+      const py = m === 1 ? y - 1 : y, pm = m === 1 ? 12 : m - 1;
+      return { from: first(py, pm), to: `${py}-${pad(pm)}-${pad(daysInMonth(py, pm - 1))}`, bucket: 'day', label: `${pm}月` };
+    }
+    if (range === '3m') { let yy = y, mm = m - 2; while (mm < 1) { mm += 12; yy -= 1; } return { from: first(yy, mm), to: today, bucket: 'month', label: '直近3か月' }; }
+    if (range === 'year') return { from: `${y}-01-01`, to: today, bucket: 'month', label: `${y}年` };
+    if (range === 'all') {
+      const dates = (all || []).map((e) => e.date).filter(Boolean).sort();
+      const last = dates.length && dates[dates.length - 1] > today ? dates[dates.length - 1] : today;
+      return { from: dates[0] || null, to: last, bucket: 'month', label: '全期間' };
+    }
+    return { from: first(y, m), to: `${y}-${pad(m)}-${pad(daysInMonth(y, m - 1))}`, bucket: 'day', label: `${m}月` };
+  }
+
+  function aggregatePnl(list) {
+    const out = { total: 0, gamble: 0, trade: 0, other: 0, count: list.length, wins: 0, losses: 0, invest: 0, payout: 0, maxLoss: 0, tradeCount: 0, byLabel: new Map() };
+    for (const e of list) {
+      const p = num(e.profit);
+      out.total += p;
+      if (out[e.category] !== undefined) out[e.category] += p;
+      if (e.category === 'trade') out.tradeCount += 1;
+      if (p > 0) out.wins += 1; else if (p < 0) out.losses += 1;
+      if (e.category === 'gamble' && has(e.invest)) { out.invest += num(e.invest); out.payout += num(e.payout); }
+      out.maxLoss = Math.min(out.maxLoss, p);
+      const key = String(e.label || '').trim() || 'その他';
+      const b = out.byLabel.get(key) || { label: key, count: 0, total: 0, wins: 0, invest: 0, payout: 0 };
+      b.count += 1; b.total += p; if (p > 0) b.wins += 1;
+      if (e.category === 'gamble' && has(e.invest)) { b.invest += num(e.invest); b.payout += num(e.payout); }
+      out.byLabel.set(key, b);
+    }
+    return out;
+  }
+
+  window.KansaiEngine = { ledger, simulate, requiredMonthly, pace, parseYen, parseRate, aggregatePnl, rangeBounds, impact };
+
+  /* ===================== storage ===================== */
+  class LocalStore {
+    constructor(ns) { this.ns = ns; this.mode = 'local'; this.listeners = new Map(); }
+    readCol(col) { try { const v = JSON.parse(localStorage.getItem(this.ns + col) || '{}'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } }
+    writeCol(col, map) {
+      try { localStorage.setItem(this.ns + col, JSON.stringify(map)); } catch (e) { throw { code: 'local_write' }; }
+      (this.listeners.get(col) || new Set()).forEach((fn) => fn());
+    }
+    on(col, fn) { if (!this.listeners.has(col)) this.listeners.set(col, new Set()); this.listeners.get(col).add(fn); return () => this.listeners.get(col).delete(fn); }
+    subscribe(col, cb) { const fire = () => { const m = this.readCol(col); cb(Object.entries(m).map(([id, v]) => ({ ...v, id })), { fromCache: false }); }; setTimeout(fire, 0); return this.on(col, fire); }
+    subscribeDoc(path, cb) { const [col, id] = path.split('/'); const fire = () => cb(this.readCol(col)[id] ?? null, { fromCache: false }); setTimeout(fire, 0); return this.on(col, fire); }
+    async add(col, data) { const m = this.readCol(col); const id = uid(); m[id] = data; this.writeCol(col, m); return id; }
+    async set(path, data) { const [col, id] = path.split('/'); const m = this.readCol(col); m[id] = data; this.writeCol(col, m); }
+    async remove(path) { const [col, id] = path.split('/'); const m = this.readCol(col); delete m[id]; this.writeCol(col, m); }
+    count() { return ['debts', 'payments', 'pnl'].reduce((s, c) => s + Object.keys(this.readCol(c)).length, 0); }
+    dump() { const o = {}; for (const c of ['debts', 'payments', 'pnl', 'meta']) o[c] = this.readCol(c); return o; }
+    clear() { for (const c of ['debts', 'payments', 'pnl', 'meta']) { try { localStorage.removeItem(this.ns + c); } catch (e) { /* ignore */ } } }
+  }
+
+  async function retry(fn) {
+    try { return await fn(); } catch (e) {
+      if (e && e.code === 'unavailable') { await new Promise((r) => setTimeout(r, 400 + Math.random() * 600)); return fn(); }
+      throw e;
+    }
+  }
+  class CloudStore {
+    constructor(db) { this.db = db; this.mode = 'cloud'; }
+    subscribe(col, cb, err) { return this.db.collection(col).onSnapshot((s) => cb(s.docs.map((d) => ({ ...d.data(), id: d.id })), s.metadata), err); }
+    subscribeDoc(path, cb, err) { return this.db.doc(path).onSnapshot((s) => cb(s.exists ? { ...s.data() } : null, s.metadata), err); }
+    async add(col, data) { const ref = this.db.collection(col).doc(); await retry(() => ref.set(data)); return ref.id; }
+    async set(path, data) { await retry(() => this.db.doc(path).set(data)); }
+    async remove(path) { await retry(() => this.db.doc(path).delete()); }
+  }
+
+  /* ===================== state ===================== */
+  const S = { debts: [], payments: [], pnl: [], bonus: null, loaded: { debts: false, payments: false, pnl: false, bonus: false }, mode: 'loading', synced: false, stale: false, readOnly: false, subError: '' };
+  const LOCAL = new LocalStore('kansai-cockpit:');
+  let STORE = null, DOWNLOADS = null, D = null;
+  const VIEWS = ['overview', 'debts', 'pnl', 'bonus', 'data'];
+  const ui = { view: 'overview', pnlRange: 'month' };
+
+  function derive() {
+    const today = todayStr();
+    const debts = S.debts.filter((d) => d && d.startDate && d.goalDate)
+      .sort((a, b) => num(a.order) - num(b.order) || num(a.createdAt) - num(b.createdAt));
+    const L = {}, P = {}, R = {}, PC = {};
+    for (const d of debts) {
+      L[d.id] = ledger(d, S.payments);
+      P[d.id] = simulate(d, L[d.id].balance, L[d.id].lastDate, today);
+      R[d.id] = requiredMonthly(d, L[d.id], today);
+      PC[d.id] = pace(d, L[d.id].repaid, today);
+    }
+    return { today, debts, L, P, R, PC };
+  }
+
+  let pending = false;
+  function schedule() { if (pending) return; pending = true; setTimeout(() => { pending = false; renderAll(); }, 0); }
+
+  /* ===================== shared UI bits ===================== */
+  let toastT = 0;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600); }
+  function showErr(prefix, msg) { const el = $('#' + prefix + '-error'); el.textContent = msg; el.hidden = false; }
+  function hideErr(prefix) { const el = $('#' + prefix + '-error'); if (el) el.hidden = true; }
+  const radioVal = (name) => (document.querySelector(`input[name="${name}"]:checked`) || {}).value;
+  function setRadio(name, value) { const el = document.querySelector(`input[name="${name}"][value="${value}"]`); if (el) el.checked = true; }
+  const tile = (label, value, sub, cls = '') => `<div class="tile"><span class="t-label">${esc(label)}</span><span class="t-value ${cls}">${esc(value)}</span><span class="t-sub">${esc(sub)}</span></div>`;
+  const emptyChart = (msg) => `<p class="chart-empty">${esc(msg)}</p>`;
+
+  function confirmBox(message, okLabel = '削除する', danger = true) {
+    return new Promise((resolve) => {
+      const dlg = $('#confirm-dialog'), ok = $('#cf-ok'), cancel = $('#cf-cancel');
+      $('#cf-msg').textContent = message; ok.textContent = okLabel; ok.className = danger ? 'btn danger' : 'btn';
+      let settled = false;
+      const finish = (v) => { if (settled) return; settled = true; ok.removeEventListener('click', onOk); cancel.removeEventListener('click', onNo); dlg.removeEventListener('cancel', onEsc); if (dlg.open) dlg.close(); resolve(v); };
+      const onOk = () => finish(true), onNo = () => finish(false), onEsc = (e) => { e.preventDefault(); finish(false); };
+      ok.addEventListener('click', onOk); cancel.addEventListener('click', onNo); dlg.addEventListener('cancel', onEsc);
+      dlg.showModal();
+    });
+  }
+
+  async function write(fn, okMsg) {
+    if (!STORE) { toast('まだ読み込み中です'); return false; }
+    if (S.readOnly) { toast('このページでは記録できません'); return false; }
+    try { await fn(); if (okMsg) toast(okMsg); return true; } catch (e) { handleWriteError(e); return false; }
+  }
+  function handleWriteError(e) {
+    const code = e && e.code;
+    if (code === 'invalid_argument' || code === 'revoked' || code === 'not_granted' || code === 'capability_disabled' || code === 'capability_removed') {
+      S.readOnly = true; renderSync(); toast('保存できませんでした。このページは閲覧のみの状態です');
+    } else if (code === 'quota_exceeded') toast('保存容量の上限です。古い記録を削除してから試してください');
+    else if (code === 'resource_exhausted') toast('操作が続いたため保存を止めました。少し待ってから試してください');
+    else if (code === 'local_write') toast('この端末に保存できませんでした。ブラウザの保存設定を確認してください');
+    else toast('保存できませんでした。通信状況を確認して、もう一度試してください');
+  }
+
+  function keepOpen(container, fn) {
+    const open = new Set(Array.from(container.querySelectorAll('details[open][id]')).map((d) => d.id));
+    fn();
+    open.forEach((id) => { const d = document.getElementById(id); if (d) d.open = true; });
+  }
+
+  function syncSelect(sel, debts, preferId) {
+    const sig = debts.map((d) => d.id + ':' + d.name).join('|');
+    if (sel.dataset.sig === sig) return;
+    const cur = sel.value;
+    sel.innerHTML = debts.length ? debts.map((d) => `<option value="${esc(d.id)}">${esc(d.name)}</option>`).join('') : '<option value="">（借入がありません）</option>';
+    sel.dataset.sig = sig;
+    if (debts.some((d) => d.id === cur)) sel.value = cur; else if (preferId) sel.value = preferId;
+  }
+
+  function niceStep(range, count) {
+    const raw = range / count; const p = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+  }
+  function axisYen(v, ref) {
+    if (Math.abs(v) < 1e-6) return '0';
+    const sign = v < 0 ? '−' : '', a = Math.abs(v);
+    if (ref >= 20000) { const m = a / 10000; return sign + (Number.isInteger(m) ? String(m) : m.toFixed(1)) + '万'; }
+    return sign + a.toLocaleString('ja-JP');
+  }
+
+  /* ===================== render ===================== */
+  function renderAll() {
+    D = derive();
+    renderSync();
+    syncSelect($('#pay-debt'), D.debts, (topDebt(D.debts, D.L) || {}).id);
+    renderOverview();
+    renderDebts();
+    renderPnl();
+    renderBonus();
+    renderData();
+  }
+
+  function renderSync() {
+    const el = $('#sync'), banner = $('#banner');
+    let text = '読み込み中', cls = 'chip', msg = '', bcls = 'banner';
+    if (S.readOnly) { text = '閲覧のみ'; cls += ' warn'; msg = 'このページでは記録や変更ができません。所有者のアカウントで開いてください。'; }
+    else if (S.subError) { text = '接続エラー'; cls += ' crit'; msg = S.subError; }
+    else if (S.mode === 'cloud') {
+      if (S.synced) { text = '✓ クラウド保存'; cls += ' good'; }
+      else if (S.stale) { text = '接続待ち'; cls += ' warn'; msg = '保存先にまだ接続できていません。表示されている内容は古い可能性があります。'; }
+    } else if (S.mode === 'local-file') { text = 'この端末に保存'; msg = 'claude.ai の外で開いているため、記録はこのブラウザの中だけに保存されます。'; bcls += ' info'; }
+    else if (S.mode === 'local-fallback') { text = '端末のみ'; cls += ' warn'; msg = 'クラウドの保存機能に接続できなかったため、この端末だけに一時保存しています。claude.ai にサインインした状態で開き直すと、クラウドに保存できます。'; }
+    el.className = cls; el.textContent = text;
+    banner.className = bcls; banner.textContent = msg; banner.hidden = !msg;
+  }
+
+  function statusChip(st, diff) {
+    if (st === 'done') return '<span class="chip good">✓ 達成</span>';
+    if (st === 'on') return '<span class="chip good">● 順調</span>';
+    return `<span class="chip warn">▲ 目安より${esc(yen(-diff))}遅れ</span>`;
+  }
+
+  function renderOverview() {
+    const hero = $('#ov-hero'), meters = $('#ov-meters'), tiles = $('#ov-tiles'), imp = $('#ov-impact');
+    if (!S.loaded.debts) return;
+    const debts = D.debts;
+    if (!debts.length) {
+      hero.innerHTML = '<p class="eyebrow">借入がまだ登録されていません</p><p class="figure">¥0</p><p class="sub">「返済」タブの「＋ 借入を追加」でカードローンなどを登録すると、目標までの残りと毎月必要な返済額がここに出ます。</p>';
+      meters.innerHTML = '<p class="empty">借入を登録すると、目標までの進み具合が表示されます。</p>';
+    } else {
+      const goalDate = debts.map((d) => d.goalDate).sort().pop();
+      const remaining = debts.reduce((s, d) => s + D.R[d.id].remaining, 0);
+      const daysLeft = daysBetween(D.today, goalDate);
+      const req = debts.filter((d) => D.R[d.id].amount > 0);
+      const reqTotal = req.reduce((s, d) => s + (D.R[d.id].lump ? 0 : D.R[d.id].amount), 0);
+      let sub;
+      if (remaining <= 0) sub = '目標額をすべて返し終えました。';
+      else if (daysLeft < 0) sub = `目標日を${-daysLeft}日過ぎています。目標日を見直すか、残りを一括で返す計画を立ててください。`;
+      else sub = `残り${daysLeft}日。目標に必要な返済は毎月 合計約${yen(reqTotal)}（${req.map((d) => `${d.name} ${D.R[d.id].lump ? '一括' + yen(D.R[d.id].remaining) : '約' + yen(D.R[d.id].amount)}`).join('・')}）。`;
+      hero.innerHTML = `<p class="eyebrow">${esc(jpDate(goalDate))}の目標まで</p><p class="figure">${remaining > 0 ? '<span class="pre">あと</span>' : ''}${esc(yen(remaining))}</p><p class="sub">${esc(sub)}</p>`;
+      meters.innerHTML = debts.map((d) => {
+        const L = D.L[d.id], pc = D.PC[d.id], goal = num(d.goalAmount);
+        const done = Math.min(L.repaid, goal);
+        const ratio = goal > 0 ? done / goal : 0;
+        const label = `${d.name}：目標${yen(goal)}のうち${yen(done)}を返済（${pct(ratio)}）。今日時点の目安は${yen(pc.expected)}`;
+        return `<div class="meter-row">
+          <div class="meter-head"><span class="m-name">${esc(d.name)}</span>${statusChip(pc.status, pc.diff)}</div>
+          <div class="meter" role="img" aria-label="${esc(label)}"><span class="fill" style="width:${(ratio * 100).toFixed(2)}%"></span><span class="pace" style="left:calc(${(pc.ratio * 100).toFixed(2)}% - 1px)"></span></div>
+          <div class="meter-foot"><span>${esc(yen(done))} / ${esc(yen(goal))}（${pct(ratio)}）</span><span>目安 ${esc(yen(pc.expected))}・${esc(md(d.goalDate))}まで</span></div>
+        </div>`;
+      }).join('');
+    }
+    const ym = D.today.slice(0, 7);
+    const monthPays = S.payments.filter((p) => String(p.date || '').slice(0, 7) === ym);
+    const payTotal = monthPays.reduce((s, p) => s + num(p.amount), 0);
+    const monthPnl = S.pnl.filter((e) => String(e.date || '').slice(0, 7) === ym);
+    const agg = aggregatePnl(monthPnl);
+    const withRate = debts.filter((d) => has(d.annualRate) && num(d.annualRate) > 0 && D.L[d.id].balance > 0);
+    const missingRate = debts.some((d) => !has(d.annualRate) && D.L[d.id].balance > 0);
+    const daily = withRate.reduce((s, d) => s + (D.L[d.id].balance * num(d.annualRate)) / 100 / 365, 0);
+    const top = topDebt(debts, D.L);
+    const proj = top ? D.P[top.id] : null;
+    tiles.innerHTML = [
+      tile('今月の返済', yen(payTotal), `${monthPays.length}件`),
+      tile('今月の特別損益', agg.count ? sYen(agg.total) : '¥0', agg.count ? `ギャンブル ${sYen(agg.gamble)}・デイトレ ${sYen(agg.trade)}` : 'まだ記録なし', tone(agg.total)),
+      tile('1日にかかる利息', withRate.length ? '約' + yen(daily) : missingRate ? '金利未設定' : '¥0', missingRate ? '金利を入れると計算します' : '今の残高 × 年利 ÷ 365'),
+      tile(top ? `${top.name}の完済予定` : '完済予定', proj && proj.ok ? jpMonth(proj.payoffDate) : '—', proj && proj.ok ? `あと${proj.months}回・今後の利息 約${yen(proj.totalInterest)}` : top ? '毎月の返済額を入れると計算します' : '返済中の借入なし'),
+    ].join('');
+    imp.innerHTML = `<h2>今月の特別損益と返済</h2>${impactBody(agg.total, agg.count, '今月')}`;
+  }
+
+  function impactBody(total, count, label) {
+    if (!count) return `<p class="empty">${esc(label)}の特別損益はまだ記録がありません。</p>`;
+    if (Math.round(total) === 0) return '<p>差し引きゼロです。</p>';
+    const r = impact(total, D);
+    const amt = `<b class="${tone(total)}">${esc(sYen(total))}</b>`;
+    if (!r) return `<p class="impact-lead">${amt}</p><p class="muted">返済中の借入はありません。</p>`;
+    const name = esc(r.debt.name);
+    const past = total < 0;
+    let s = `<p class="impact-lead">${amt}${r.times ? ` は、${name}の毎月の返済 <b>約${(Math.round(r.times * 10) / 10).toFixed(1)}回分</b>です。` : ''}</p>`;
+    if (r.coversAll) s += `<p>${past ? 'この損失がなければ' : 'この利益で'}、${name}の残り${esc(yen(D.L[r.debt.id].balance))}をすべて返せていた計算です。</p>`;
+    else if (has(r.sooner)) {
+      const head = past ? '繰上返済に回していれば、' : '繰上返済に回すと、';
+      const dec = past ? '減っていた' : '減る';
+      let body;
+      if (r.sooner > 0) body = r.rateKnown && r.saved > 0 ? `完済が<b>${r.sooner}回分</b>早まり、利息も<b>約${esc(yen(r.saved))}</b>${dec}計算です。` : `完済が<b>${r.sooner}回分</b>${past ? '早まっていた' : '早まる'}計算です。`;
+      else body = r.rateKnown && r.saved > 0 ? `完済月は同じでも、利息が<b>約${esc(yen(r.saved))}</b>${dec}計算です。` : `最後の支払いがその分${past ? '小さくなっていた' : '小さくなる'}計算です。`;
+      s += `<p>${head}${body}</p>`;
+    } else s += `<p class="muted">${name}の毎月の返済額を入れると、完済が何回分早まるかを計算します。</p>`;
+    if (!r.rateKnown) s += `<p class="muted small">${name}の金利が未設定のため、利息の差は計算していません。</p>`;
+    return s;
+  }
+
+  function debtCard(d) {
+    const L = D.L[d.id], P = D.P[d.id], R = D.R[d.id];
+    const goal = num(d.goalAmount);
+    const rateChip = has(d.annualRate)
+      ? (num(d.annualRate) === 0 ? '<span class="chip">利息なし</span>' : `<span class="chip">年${esc(String(+num(d.annualRate).toFixed(3)))}%</span>`)
+      : '<span class="chip warn">▲ 金利未設定</span>';
+    const paid = L.balance <= 0;
+    const reached = !paid && goal > 0 && L.repaid >= goal;
+    const accrued = has(d.annualRate) && L.balance > 0 ? Math.floor((L.balance * num(d.annualRate) / 100 * Math.max(0, daysBetween(L.lastDate, D.today))) / 365) : 0;
+    let proj;
+    if (paid) proj = '完済しました';
+    else if (P.ok) proj = `${esc(jpDate(P.payoffDate))}（あと${P.months}回${num(d.annualRate) > 0 ? `・今後の利息 約${esc(yen(P.totalInterest))}` : ''}）`;
+    else if (P.reason === 'interest-exceeds') proj = '<span class="crit-text">毎月の返済額が利息より少なく、このままでは完済できません</span>';
+    else proj = '<span class="muted">毎月の返済額を入れると計算します</span>';
+    let next = '';
+    if (!paid && P.ok && P.points.length > 1) {
+      const amt = P.months === 1 ? P.lastPayment : num(d.monthlyPayment);
+      next = `<div><dt>次回の返済</dt><dd>${esc(mdw(P.points[1].date))} ${esc(yen(amt))}</dd></div>`;
+    }
+    const need = R.remaining <= 0 ? '目標額を返し終えました' : R.lump ? `残り${esc(yen(R.remaining))}を一括（目標日までに返済日がありません）` : `月 約${esc(yen(R.amount))}（あと${R.n}回）`;
+    return `<article class="panel debt">
+      <div class="debt-head"><h2>${esc(d.name)}</h2>${rateChip}<button type="button" class="btn small ghost" data-edit="${esc(d.id)}">編集</button></div>
+      ${paid ? '<span class="stamp" aria-hidden="true">完済</span>' : reached ? '<span class="stamp" aria-hidden="true">達成</span>' : ''}
+      <div class="debt-balance"><span class="label">いまの残高</span><span class="big">${esc(yen(L.balance))}</span>${accrued > 0 ? `<span class="sub">ほかに未払いの利息 約${esc(yen(accrued))}（${esc(md(L.lastDate))}から${daysBetween(L.lastDate, D.today)}日分）</span>` : ''}</div>
+      <dl class="kv">
+        <div><dt>目標</dt><dd>${esc(jpDate(d.goalDate))}までに${esc(yen(goal))}（返済済み ${esc(yen(Math.min(L.repaid, goal)))}）</dd></div>
+        <div><dt>目標に必要な返済</dt><dd>${need}</dd></div>
+        <div><dt>毎月の返済</dt><dd>${has(d.monthlyPayment) ? esc(yen(num(d.monthlyPayment))) : '<span class="muted">未設定</span>'}${has(d.payDay) ? `・毎月${num(d.payDay)}日` : ''}</dd></div>
+        <div><dt>完済予定</dt><dd>${proj}</dd></div>
+        ${next}
+        ${L.interestPaid > 0 ? `<div><dt>払った利息</dt><dd>${esc(yen(L.interestPaid))}</dd></div>` : ''}
+      </dl>
+      <details id="ledger-${esc(d.id)}"><summary>返済の記録（${L.rows.length}件）</summary>${ledgerTable(d, L)}</details>
+    </article>`;
+  }
+
+  const KIND = { regular: '約定返済', extra: '繰上返済', bonus: 'ボーナス返済' };
+  function ledgerTable(d, L) {
+    const rows = L.rows.map((r) => `<tr>
+        <td>${esc(wareki(r.p.date))}</td>
+        <td>${esc(KIND[r.p.kind] || '返済')}${r.p.note ? `<span class="muted">・${esc(r.p.note)}</span>` : ''}</td>
+        <td class="num">${fmtN(num(r.p.amount))}</td>
+        <td class="num">${r.interest > 0 ? fmtN(r.interest) : '—'}</td>
+        <td class="num">${fmtN(r.balance)}</td>
+        <td class="act"><button type="button" class="icon-btn" data-del-pay="${esc(r.p.id)}" aria-label="${esc(md(r.p.date))}の返済記録を削除">×</button></td>
+      </tr>`).join('');
+    return `<div class="table-scroll"><table class="ledger">
+      <thead><tr><th>年月日</th><th>摘要</th><th class="num">返済額</th><th class="num">うち利息</th><th class="num">差引残高</th><th><span class="sr">操作</span></th></tr></thead>
+      <tbody><tr class="opening"><td>${esc(wareki(d.startDate))}</td><td>開始残高</td><td class="num"></td><td class="num"></td><td class="num">${fmtN(num(d.openingBalance))}</td><td></td></tr>${rows}</tbody>
+    </table></div>${L.rows.length ? '' : '<p class="hint">まだ返済の記録がありません。上のフォームから記録してください。</p>'}`;
+  }
+
+  function renderDebts() {
+    const wrap = $('#debt-cards');
+    if (!S.loaded.debts) { wrap.innerHTML = '<div class="panel"><p class="empty">読み込み中…</p></div>'; return; }
+    keepOpen(wrap, () => {
+      wrap.innerHTML = D.debts.length ? D.debts.map(debtCard).join('')
+        : '<div class="panel"><h2>借入がまだありません</h2><p class="empty">下の「＋ 借入を追加」から、カードローンや家族からの借入を登録してください。残高・金利・毎月の返済額・目標日を入れると、完済予定日と必要な返済額を計算します。</p></div>';
+    });
+    renderSim();
+    if (ui.view === 'debts') renderBalanceChart();
+  }
+
+  function renderSim() {
+    const sel = $('#sim-debt');
+    syncSelect(sel, D.debts, (topDebt(D.debts, D.L) || {}).id);
+    const out = $('#sim-result');
+    const d = D.debts.find((x) => x.id === sel.value);
+    if (!d) { out.innerHTML = '<p class="empty">借入を登録すると使えます。</p>'; return; }
+    const L = D.L[d.id];
+    const amt = parseYen($('#sim-amount').value);
+    if (L.balance <= 0) { out.innerHTML = `<p class="empty">${esc(d.name)}は完済しています。</p>`; return; }
+    if (!(amt > 0)) { out.innerHTML = '<p class="empty">金額を入れると、完済予定と今後の利息がどう変わるかを表示します。</p>'; return; }
+    const base = simulate(d, L.balance, L.lastDate, D.today);
+    if (amt >= L.balance) { out.innerHTML = `<p>${esc(yen(amt))}あれば残高${esc(yen(L.balance))}をすべて返せます。${base.ok && base.totalInterest > 0 ? `今後かかるはずだった利息 約${esc(yen(base.totalInterest))}がなくなります。` : ''}</p>`; return; }
+    if (!base.ok) { out.innerHTML = `<p class="empty">${base.reason === 'interest-exceeds' ? '毎月の返済額が利息より少ないため計算できません。' : `${esc(d.name)}の毎月の返済額を入れると計算できます。`}</p>`; return; }
+    const alt = simulate(d, L.balance, L.lastDate, D.today, { extra: amt });
+    const diff = base.months - alt.months;
+    out.innerHTML = `<dl class="compare">
+      <div><dt>完済予定</dt><dd>${esc(jpDate(base.payoffDate))} → <b>${esc(jpDate(alt.payoffDate))}</b>（${diff > 0 ? `${diff}回分早まる` : '同じ月。最後の支払いが減る'}）</dd></div>
+      <div><dt>今後の利息</dt><dd>${has(d.annualRate) ? `約${esc(yen(base.totalInterest))} → <b>約${esc(yen(alt.totalInterest))}</b>（${esc(yen(base.totalInterest - alt.totalInterest))}減る）` : '<span class="muted">金利を入れると計算します</span>'}</dd></div>
+    </dl>`;
+  }
+
+  function stepPath(pts, x, y, extendTo) {
+    if (!pts.length) return '';
+    let d = `M${f1(x(pts[0].date))},${f1(y(pts[0].balance))}`;
+    for (let i = 1; i < pts.length; i++) d += `H${f1(x(pts[i].date))}V${f1(y(pts[i].balance))}`;
+    if (extendTo) d += `H${f1(x(extendTo))}`;
+    return d;
+  }
+
+  let balW = 0;
+  function renderBalanceChart() {
+    const host = $('#bal-chart'), legend = $('#bal-legend'), tableBox = $('#bal-table');
+    const W = Math.round(host.clientWidth);
+    if (!W) return;
+    balW = W;
+    const debts = D.debts.slice(0, 4);
+    if (!debts.length) { host.innerHTML = emptyChart('借入を登録するとグラフが表示されます。'); legend.innerHTML = ''; tableBox.innerHTML = ''; return; }
+    const today = D.today;
+    const series = debts.map((d, i) => {
+      const L = D.L[d.id], P = D.P[d.id];
+      const actual = [{ date: d.startDate, balance: num(d.openingBalance) }].concat(L.rows.map((r) => ({ date: r.p.date, balance: r.balance })));
+      return { d, color: `var(--series-${i + 1})`, actual, proj: P.ok && L.balance > 0 ? P.points : null, P, L };
+    });
+    const minD = debts.map((d) => d.startDate).sort()[0];
+    let maxD = [today, ...debts.map((d) => d.goalDate)].sort().pop();
+    for (const s of series) if (s.proj) { const last = s.proj[s.proj.length - 1].date; if (last > maxD) maxD = last; }
+    const cap = addMonths(today, 30);
+    if (maxD > cap) maxD = cap;
+    if (daysBetween(minD, maxD) < 45) maxD = addDays(minD, 45);
+    const spanD = daysBetween(minD, maxD);
+    const H = 250, ml = 46, mr = 14, mt = 24, mb = 26, pw = W - ml - mr, ph = H - mt - mb;
+    const yMaxRaw = Math.max(1, ...series.map((s) => Math.max(...s.actual.map((p) => p.balance))));
+    const step = niceStep(yMaxRaw, 4), yMax = Math.ceil(yMaxRaw / step) * step;
+    const x = (s) => ml + (Math.min(Math.max(daysBetween(minD, s), 0), spanD) / spanD) * pw;
+    const y = (v) => mt + ph - (v / yMax) * ph;
+    let ax = '';
+    for (let v = 0; v <= yMax + 1e-6; v += step) ax += `<line class="${v === 0 ? 'baseline' : 'gridline'}" x1="${ml}" x2="${W - mr}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text x="${ml - 6}" y="${f1(y(v) + 4)}" text-anchor="end">${axisYen(v, yMax)}</text>`;
+    const months = [];
+    for (let mk = addMonths(minD.slice(0, 8) + '01', 1); mk <= maxD; mk = addMonths(mk, 1)) months.push(mk);
+    const stride = Math.max(1, Math.ceil(months.length / Math.max(1, Math.floor(pw / 44))));
+    months.forEach((m, i) => { if (i % stride === 0) ax += `<text x="${f1(x(m))}" y="${H - 8}" text-anchor="middle">${Number(m.slice(5, 7))}月</text>`; });
+    const goals = [...new Set(debts.map((d) => d.goalDate).filter((g) => g >= minD && g <= maxD))];
+    const gl = goals.map((g) => { const gx = x(g); const anchor = gx > W - 70 ? 'end' : gx < ml + 40 ? 'start' : 'middle'; return `<line class="goal-line" x1="${f1(gx)}" x2="${f1(gx)}" y1="${mt}" y2="${mt + ph}"/><text class="goal-text" x="${f1(gx)}" y="${mt - 9}" text-anchor="${anchor}">目標 ${md(g)}</text>`; }).join('');
+    let paths = '';
+    const end = today < maxD ? today : maxD;
+    for (const s of series) {
+      paths += `<path class="line" style="stroke:${s.color}" d="${stepPath(s.actual.filter((p) => p.date <= maxD), x, y, end)}"/>`;
+      if (s.proj) {
+        paths += `<path class="line proj" style="stroke:${s.color}" d="${stepPath(s.proj, x, y)}"/>`;
+        if (s.P.payoffDate <= maxD) paths += `<circle class="dot" cx="${f1(x(s.P.payoffDate))}" cy="${f1(y(0))}" r="4" style="fill:${s.color}"/>`;
+      }
+      paths += `<circle class="dot" cx="${f1(x(end))}" cy="${f1(y(s.L.balance))}" r="4" style="fill:${s.color}"/>`;
+    }
+    host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="借入残高の推移。実線が実績、点線が予測"><defs><clipPath id="bal-clip"><rect x="${ml - 6}" y="0" width="${pw + 12}" height="${H}"/></clipPath></defs><g class="ax">${ax}</g>${gl}<g clip-path="url(#bal-clip)">${paths}</g><line class="cross" x1="0" x2="0" y1="${mt}" y2="${mt + ph}" visibility="hidden"/><rect class="overlay" x="${ml}" y="${mt}" width="${pw}" height="${ph}" fill="transparent"/></svg><div class="tooltip" hidden></div>`;
+    legend.innerHTML = series.map((s) => `<span class="lg"><span class="key" style="background:${s.color}"></span>${esc(s.d.name)}</span>`).join('') + '<span class="lg muted">実線＝実績・点線＝予測</span>';
+    const svg = host.querySelector('svg'), cross = svg.querySelector('.cross'), tip = host.querySelector('.tooltip'), ov = svg.querySelector('.overlay');
+    const valueAt = (s, date) => {
+      if (date < s.d.startDate) return null;
+      if (date <= today) { let v = null; for (const p of s.actual) if (p.date <= date) v = p.balance; return v; }
+      if (!s.proj) return s.L.balance > 0 ? null : 0;
+      let v = s.proj[0].balance; for (const p of s.proj) if (p.date <= date) v = p.balance; return v;
+    };
+    let cur = null;
+    const showAt = (date) => {
+      cur = date;
+      const cx = x(date);
+      cross.setAttribute('x1', f1(cx)); cross.setAttribute('x2', f1(cx)); cross.setAttribute('visibility', 'visible');
+      tip.innerHTML = `<div class="tt-date">${esc(jpDate(date))}${date > today ? '（予測）' : ''}</div>` + series.map((s) => { const v = valueAt(s, date); return `<div class="tt-row"><span class="tt-name"><span class="key" style="background:${s.color}"></span>${esc(s.d.name)}</span><b>${v === null ? '—' : esc(yen(v))}</b></div>`; }).join('');
+      tip.hidden = false;
+      const scale = svg.getBoundingClientRect().width / W || 1;
+      const px = cx * scale, tw = tip.offsetWidth;
+      let left = px + 12; if (left + tw > host.clientWidth) left = px - tw - 12; if (left < 0) left = 0;
+      tip.style.left = left + 'px'; tip.style.top = (mt * scale) + 'px';
+    };
+    const hide = () => { cross.setAttribute('visibility', 'hidden'); tip.hidden = true; };
+    const move = (e) => { const rect = svg.getBoundingClientRect(); const px = ((e.clientX - rect.left) / rect.width) * W; const t = Math.min(Math.max((px - ml) / pw, 0), 1); showAt(addDays(minD, Math.round(t * spanD))); };
+    ov.addEventListener('pointermove', move); ov.addEventListener('pointerdown', move); ov.addEventListener('pointerleave', hide);
+    host.onkeydown = (e) => { if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault(); let nd = addDays(cur || today, e.key === 'ArrowRight' ? 7 : -7); if (nd < minD) nd = minD; if (nd > maxD) nd = maxD; showAt(nd); };
+    host.onfocus = () => showAt(cur || today); host.onblur = hide;
+    const tdates = [minD, ...months];
+    if (!tdates.includes(today)) tdates.push(today);
+    tdates.sort();
+    tableBox.innerHTML = `<table class="ledger"><thead><tr><th>日付</th>${series.map((s) => `<th class="num">${esc(s.d.name)}</th>`).join('')}</tr></thead><tbody>${tdates.map((dt) => `<tr><td>${esc(jpDate(dt))}${dt === today ? '（今日）' : dt > today ? '（予測）' : ''}</td>${series.map((s) => { const v = valueAt(s, dt); return `<td class="num">${v === null ? '—' : fmtN(v)}</td>`; }).join('')}</tr>`).join('')}</tbody></table>`;
+  }
+
+  /* ---------- 特別損益 ---------- */
+  const CAT = { gamble: 'ギャンブル', trade: 'デイトレ', other: 'その他' };
+  const LABELS = { gamble: ['パチンコ', 'スロット', '競馬', '競艇', '競輪', 'オートレース', '宝くじ', '麻雀'], trade: ['日本株デイトレ', '信用デイトレ', 'PTS', '先物・オプション'], other: ['その他'] };
+
+  function renderPnl() {
+    const rb = rangeBounds(ui.pnlRange, D.today, S.pnl);
+    const list = S.pnl.filter((e) => e.date && (!rb.from || e.date >= rb.from) && (!rb.to || e.date <= rb.to));
+    const a = aggregatePnl(list);
+    $('#pnl-tiles').innerHTML = [
+      tile(`${rb.label}の合計`, a.count ? sYen(a.total) : '¥0', `${a.count}件・勝ち${a.wins}・負け${a.losses}`, tone(a.total)),
+      tile('ギャンブル', sYen(a.gamble), a.invest > 0 ? `還元率 ${pct(a.payout / a.invest)}（投入 ${yen(a.invest)}）` : '記録なし', tone(a.gamble)),
+      tile('デイトレ', sYen(a.trade), a.tradeCount ? `${a.tradeCount}件` : '記録なし', tone(a.trade)),
+      tile('勝率', a.count ? pct(a.wins / a.count) : '—', a.count && a.maxLoss < 0 ? `最大の負け ${sYen(a.maxLoss)}` : '記録ごとの勝ち負け'),
+    ].join('');
+    $('#pnl-impact').innerHTML = `<h2>${esc(rb.label)}の特別損益と返済</h2>${impactBody(a.total, a.count, rb.label)}`;
+    $('#pnl-bylabel').innerHTML = byLabelTable(a);
+    $('#pnl-list').innerHTML = entryList(list);
+    $('#pnl-chart-title').textContent = rb.bucket === 'day' ? `${rb.label}の日別損益` : `${rb.label}の月別損益`;
+    if (ui.view === 'pnl') renderPnlChart(list, rb);
+  }
+
+  function byLabelTable(a) {
+    if (!a.byLabel.size) return '<p class="empty">この期間の記録はありません。</p>';
+    const rows = [...a.byLabel.values()].sort((p, q) => p.total - q.total);
+    return `<table class="ledger"><thead><tr><th>種別</th><th class="num">回数</th><th class="num">損益</th><th class="num">勝率</th><th class="num">還元率</th></tr></thead><tbody>${rows.map((b) => `<tr><td>${esc(b.label)}</td><td class="num">${b.count}</td><td class="num ${tone(b.total)}">${esc(sYen(b.total))}</td><td class="num">${pct(b.wins / b.count)}</td><td class="num">${b.invest > 0 ? pct(b.payout / b.invest) : '—'}</td></tr>`).join('')}</tbody></table><p class="hint">還元率は回収額 ÷ 投入額（ギャンブルのみ）。100%を下回ると負けです。</p>`;
+  }
+
+  function entryList(list) {
+    if (!list.length) return '<li class="empty">この期間の記録はありません。上のフォームから記録してください。</li>';
+    return [...list].sort((p, q) => q.date.localeCompare(p.date) || num(q.createdAt) - num(p.createdAt)).slice(0, 200).map((e) => {
+      const sub = e.category === 'gamble' && has(e.invest) ? `投入 ${yen(num(e.invest))} → 回収 ${yen(num(e.payout))}${e.note ? '・' + e.note : ''}` : (e.note || '');
+      return `<li class="entry">
+        <div class="e-main"><span class="e-date">${esc(mdw(e.date))}</span><span class="e-label">${esc(e.label || CAT[e.category] || '')}</span><span class="chip">${esc(CAT[e.category] || '')}</span></div>
+        <div class="e-amt ${tone(num(e.profit))}">${esc(sYen(num(e.profit)))}</div>
+        <button type="button" class="icon-btn" data-del-pnl="${esc(e.id)}" aria-label="${esc(md(e.date) + ' ' + (e.label || '') + 'の記録を削除')}">×</button>
+        ${sub ? `<div class="e-sub">${esc(sub)}</div>` : ''}
+      </li>`;
+    }).join('');
+  }
+
+  function barPath(x, y0, w, y1) {
+    if (Math.abs(y0 - y1) < 2) y1 = y1 <= y0 ? y0 - 2 : y0 + 2;
+    const r = Math.min(4, w / 2, Math.abs(y0 - y1));
+    if (y1 < y0) return `M${f1(x)},${f1(y0)}V${f1(y1 + r)}Q${f1(x)},${f1(y1)} ${f1(x + r)},${f1(y1)}H${f1(x + w - r)}Q${f1(x + w)},${f1(y1)} ${f1(x + w)},${f1(y1 + r)}V${f1(y0)}Z`;
+    return `M${f1(x)},${f1(y0)}V${f1(y1 - r)}Q${f1(x)},${f1(y1)} ${f1(x + r)},${f1(y1)}H${f1(x + w - r)}Q${f1(x + w)},${f1(y1)} ${f1(x + w)},${f1(y1 - r)}V${f1(y0)}Z`;
+  }
+
+  let pnlW = 0, lastPnlArgs = null;
+  function renderPnlChart(list, rb) {
+    lastPnlArgs = [list, rb];
+    const host = $('#pnl-chart'), tableBox = $('#pnl-table');
+    const W = Math.round(host.clientWidth);
+    if (!W) return;
+    pnlW = W;
+    if (!list.length) { host.innerHTML = emptyChart('この期間の記録はありません。'); tableBox.innerHTML = ''; return; }
+    const keys = [];
+    if (rb.bucket === 'day') { for (let d = rb.from; d <= rb.to; d = addDays(d, 1)) keys.push(d); }
+    else {
+      const from = (rb.from || list.reduce((m, e) => (e.date < m ? e.date : m), list[0].date)).slice(0, 7);
+      const endK = (rb.to || D.today).slice(0, 7);
+      for (let k = from; k <= endK && keys.length < 120; k = addMonths(k + '-01', 1).slice(0, 7)) keys.push(k);
+    }
+    const map = new Map(keys.map((k) => [k, { key: k, total: 0, count: 0 }]));
+    for (const e of list) { const b = map.get(rb.bucket === 'day' ? e.date : e.date.slice(0, 7)); if (b) { b.total += num(e.profit); b.count += 1; } }
+    const data = keys.map((k) => map.get(k));
+    const H = 230, ml = 48, mr = 8, mt = 18, mb = 26, pw = W - ml - mr, ph = H - mt - mb;
+    const maxV = Math.max(0, ...data.map((b) => b.total)), minV = Math.min(0, ...data.map((b) => b.total));
+    const step = niceStep(Math.max(maxV - minV, 1000), 4);
+    const top = Math.ceil(maxV / step) * step, bot = Math.floor(minV / step) * step;
+    const span = (top - bot) || step;
+    const y = (v) => mt + ((top - v) / span) * ph;
+    const ref = Math.max(Math.abs(top), Math.abs(bot));
+    let ax = '';
+    for (let v = bot; v <= top + 1e-6; v += step) if (Math.abs(v) > 1e-6) ax += `<line class="gridline" x1="${ml}" x2="${W - mr}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text x="${ml - 6}" y="${f1(y(v) + 4)}" text-anchor="end">${axisYen(v, ref)}</text>`;
+    ax += `<text x="${ml - 6}" y="${f1(y(0) + 4)}" text-anchor="end">0</text>`;
+    const band = pw / data.length, bw = Math.max(2, Math.min(24, band * 0.62));
+    const stride = rb.bucket === 'day' ? 0 : Math.max(1, Math.ceil(data.length / Math.max(1, Math.floor(pw / 40))));
+    let bars = '', xl = '';
+    const labelOf = (b) => (rb.bucket === 'day' ? jpDate(b.key) : jpMonth(b.key + '-01'));
+    data.forEach((b, i) => {
+      const cx = ml + band * i + band / 2;
+      const bar = Math.round(b.total) !== 0 ? `<path class="bar" style="fill:var(${b.total > 0 ? '--pos' : '--neg'})" d="${barPath(cx - bw / 2, y(0), bw, y(b.total))}"/>` : '';
+      bars += `<g class="band" tabindex="0" data-i="${i}" aria-label="${esc(labelOf(b))}：${b.count ? esc(sYen(b.total)) + '（' + b.count + '件）' : '記録なし'}"><rect class="hit" x="${f1(ml + band * i)}" y="${mt}" width="${f1(band)}" height="${ph}"/>${bar}</g>`;
+      const dayN = rb.bucket === 'day' ? Number(b.key.slice(8)) : 0;
+      const show = rb.bucket === 'day' ? dayN === 1 || dayN % 5 === 0 : i % stride === 0;
+      if (show) xl += `<text x="${f1(cx)}" y="${H - 8}" text-anchor="middle">${rb.bucket === 'day' ? dayN : Number(b.key.slice(5, 7)) + '月'}</text>`;
+    });
+    const ext = data.reduce((m, b) => (Math.abs(b.total) > Math.abs(m.total) ? b : m), data[0]);
+    let extLabel = '';
+    if (ext && Math.round(ext.total) !== 0) {
+      const i = data.indexOf(ext), cx = ml + band * i + band / 2;
+      const yy = ext.total > 0 ? y(ext.total) - 6 : y(ext.total) + 14;
+      const anchor = cx < ml + 30 ? 'start' : cx > W - 40 ? 'end' : 'middle';
+      extLabel = `<text class="val-label" x="${f1(cx)}" y="${f1(yy)}" text-anchor="${anchor}">${esc(sYen(ext.total))}</text>`;
+    }
+    host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="${esc(rb.label)}の特別損益"><g class="ax">${ax}${xl}</g><line class="baseline" x1="${ml}" x2="${W - mr}" y1="${f1(y(0))}" y2="${f1(y(0))}"/>${bars}${extLabel}</svg><div class="tooltip" hidden></div>`;
+    const tip = host.querySelector('.tooltip'), svg = host.querySelector('svg');
+    const show = (el) => {
+      const b = data[Number(el.dataset.i)];
+      tip.innerHTML = `<div class="tt-date">${esc(labelOf(b))}</div><div class="tt-row"><b class="${tone(b.total)}">${b.count ? esc(sYen(b.total)) : '記録なし'}</b><span class="muted">${b.count ? b.count + '件' : ''}</span></div>`;
+      tip.hidden = false;
+      const scale = svg.getBoundingClientRect().width / W || 1;
+      const cx = (ml + band * Number(el.dataset.i) + band / 2) * scale, tw = tip.offsetWidth;
+      let left = cx + 12; if (left + tw > host.clientWidth) left = cx - tw - 12; if (left < 0) left = 0;
+      tip.style.left = left + 'px'; tip.style.top = (mt * scale) + 'px';
+    };
+    const hide = () => { tip.hidden = true; };
+    host.querySelectorAll('.band').forEach((el) => { el.addEventListener('pointerenter', () => show(el)); el.addEventListener('focus', () => show(el)); el.addEventListener('pointerleave', hide); el.addEventListener('blur', hide); });
+    const trows = data.filter((b) => b.count > 0 || rb.bucket === 'month');
+    tableBox.innerHTML = `<table class="ledger"><thead><tr><th>${rb.bucket === 'day' ? '日付' : '月'}</th><th class="num">損益</th><th class="num">件数</th></tr></thead><tbody>${trows.map((b) => `<tr><td>${esc(labelOf(b))}</td><td class="num ${tone(b.total)}">${b.count ? esc(sYen(b.total)) : '—'}</td><td class="num">${b.count}</td></tr>`).join('')}</tbody></table>`;
+  }
+
+  /* ---------- ボーナス ---------- */
+  let allocSig = null, bonusPrefilled = false;
+  function renderBonus() {
+    if (!S.loaded.debts) return;
+    const box = $('#bn-alloc');
+    const sig = D.debts.map((d) => d.id + ':' + d.name).join('|');
+    if (sig !== allocSig) {
+      const prev = {};
+      box.querySelectorAll('input').forEach((i) => { prev[i.id] = i.value; });
+      box.innerHTML = D.debts.length ? D.debts.map((d) => { const id = 'bn-a-' + d.id; return `<div class="alloc-row"><label for="${esc(id)}">${esc(d.name)}<span class="note" data-note="${esc(d.id)}"></span></label><input id="${esc(id)}" inputmode="numeric" autocomplete="off" placeholder="0" value="${esc(prev[id] ?? '')}"></div>`; }).join('')
+        : '<p class="empty">借入を登録すると、ここに配分の欄が出ます。</p>';
+      allocSig = sig;
+    }
+    if (!bonusPrefilled && S.loaded.bonus) {
+      bonusPrefilled = true;
+      const touched = ['bn-net', 'bn-study', 'bn-date'].some((id) => document.getElementById(id).value);
+      const b = S.bonus;
+      if (b && !touched) {
+        if (b.date) $('#bn-date').value = b.date;
+        if (has(b.net) && num(b.net) > 0) $('#bn-net').value = String(b.net);
+        if (has(b.buffer)) $('#bn-buffer').value = String(b.buffer);
+        if (has(b.study) && num(b.study) > 0) $('#bn-study').value = String(b.study);
+        for (const [id, v] of Object.entries(b.alloc || {})) { const el = document.getElementById('bn-a-' + id); if (el && num(v) > 0) el.value = String(v); }
+      }
+    }
+    renderBonusResult();
+  }
+
+  function bonusState() {
+    const pos = (v) => (v > 0 ? v : 0);
+    const net = pos(parseYen($('#bn-net').value)), buffer = pos(parseYen($('#bn-buffer').value)), study = pos(parseYen($('#bn-study').value));
+    const alloc = {}; let used = 0;
+    for (const d of D.debts) { const el = document.getElementById('bn-a-' + d.id); const v = el ? pos(parseYen(el.value)) : 0; alloc[d.id] = v; used += v; }
+    return { date: $('#bn-date').value || null, net, buffer, study, alloc, used, left: net - buffer - study - used };
+  }
+
+  const reqText = (R) => (R.remaining <= 0 ? '達成' : R.lump ? `一括 ${yen(R.remaining)}` : `月 約${yen(R.amount)}`);
+  const payoffText = (P) => (P.ok ? (P.months === 0 ? '完済' : jpMonth(P.payoffDate)) : '—');
+  function renderBonusResult() {
+    if (!D) return;
+    const box = $('#bn-result'), st = bonusState();
+    const left = $('#bn-left');
+    left.textContent = yen(st.left); left.className = st.left < 0 ? 'loss' : '';
+    for (const d of D.debts) {
+      const n = document.querySelector(`[data-note="${CSS.escape(d.id)}"]`);
+      if (n) n.textContent = `目標まで残り ${yen(D.R[d.id].remaining)}・残高 ${yen(D.L[d.id].balance)}`;
+    }
+    if (!D.debts.length) { box.innerHTML = '<p class="empty">借入を登録すると計算できます。</p>'; return; }
+    if (!(st.net > 0)) { box.innerHTML = '<p class="empty">手取り額を入れると、配分したあとの残高・目標に必要な毎月の返済・完済予定を今と比べられます。</p>'; return; }
+    let tot0 = 0, tot1 = 0;
+    const blocks = D.debts.map((d) => {
+      const L = D.L[d.id], a = Math.min(st.alloc[d.id] || 0, L.balance);
+      const R0 = D.R[d.id], L1 = { ...L, balance: L.balance - a, repaid: L.repaid + a }, R1 = requiredMonthly(d, L1, D.today);
+      const P0 = D.P[d.id], P1 = simulate(d, L.balance, L.lastDate, D.today, { extra: a });
+      tot0 += R0.lump ? 0 : R0.amount; tot1 += R1.lump ? 0 : R1.amount;
+      return `<div class="bn-debt"><h3>${esc(d.name)}<span class="muted small">${a > 0 ? esc(yen(a)) + 'を返済' : '配分なし'}</span></h3><dl class="compare">
+        <div><dt>残高</dt><dd>${esc(yen(L.balance))} → <b>${esc(yen(L1.balance))}</b></dd></div>
+        <div><dt>目標まで</dt><dd>${esc(yen(R0.remaining))} → <b>${esc(yen(R1.remaining))}</b></dd></div>
+        <div><dt>目標に必要な毎月の返済</dt><dd>${esc(reqText(R0))} → <b>${esc(reqText(R1))}</b></dd></div>
+        <div><dt>完済予定</dt><dd>${esc(payoffText(P0))} → <b>${esc(payoffText(P1))}</b></dd></div>
+      </dl></div>`;
+    });
+    box.innerHTML = `<p class="lead">配分すると、目標に必要な毎月の返済は合計 <b>約${esc(yen(tot1))}</b>（今は約${esc(yen(tot0))}）。</p>${st.left < 0 ? `<p class="form-error">配分の合計が手取りを${esc(yen(-st.left))}上回っています。</p>` : ''}${blocks.join('')}`;
+  }
+
+  /* ---------- データ ---------- */
+  function renderData() {
+    const where = S.mode === 'cloud' ? 'claude.ai のクラウド。このページを開けるスマホとPCで、同じ記録が見られます。' : S.mode === 'loading' ? '接続を確認しています…' : 'このブラウザの中だけ。ほかの端末とは共有されません。';
+    $('#data-status').innerHTML = `<p class="empty">${esc(where)}</p><p class="hint">借入 ${S.debts.length}件・返済 ${S.payments.length}件・特別損益 ${S.pnl.length}件</p>`;
+    const lc = S.mode === 'cloud' ? LOCAL.count() : 0;
+    $('#migrate-panel').hidden = !(lc > 0);
+    if (lc > 0) $('#migrate-count').textContent = `${lc}件`;
+  }
+
+  const csvCell = (v, text) => { let s = String(v ?? ''); if (text && /^[=+\-@]/.test(s)) s = "'" + s; return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  function paymentsCsv() {
+    const lines = [['日付', '借入', '種類', '返済額', 'うち利息（概算）', '元本に充当', '返済後残高', 'メモ'].join(',')];
+    for (const d of D.debts) for (const r of D.L[d.id].rows) lines.push([r.p.date, csvCell(d.name, true), KIND[r.p.kind] || '返済', num(r.p.amount), Math.round(Math.max(0, r.interest)), Math.round(r.principal), Math.round(r.balance), csvCell(r.p.note || '', true)].join(','));
+    return lines.join('\r\n') + '\r\n';
+  }
+  function pnlCsv() {
+    const lines = [['日付', '区分', '種別', '投入額', '回収額', '損益', 'メモ'].join(',')];
+    for (const e of [...S.pnl].filter((x) => x.date).sort((a, b) => a.date.localeCompare(b.date))) lines.push([e.date, CAT[e.category] || '', csvCell(e.label || '', true), has(e.invest) ? num(e.invest) : '', has(e.payout) ? num(e.payout) : '', num(e.profit), csvCell(e.note || '', true)].join(','));
+    return lines.join('\r\n') + '\r\n';
+  }
+  async function exportCsv(kind) {
+    if (!D) return;
+    const stamp = todayStr().replace(/-/g, '');
+    const csv = kind === 'pay' ? paymentsCsv() : pnlCsv();
+    const filename = kind === 'pay' ? `返済の記録_${stamp}.csv` : `特別損益_${stamp}.csv`;
+    if (DOWNLOADS) {
+      try { await DOWNLOADS.save({ filename, data: '﻿' + csv }); toast('保存しました'); return; } catch (e) {
+        const code = e && e.code;
+        if (code === 'declined') return;
+        if (code === 'rate_limited') { toast('少し待ってからもう一度押してください'); return; }
+      }
+    }
+    $('#exp-fallback').hidden = false; $('#exp-text').value = csv;
+  }
+
+  /* ===================== routing ===================== */
+  function route() {
+    const h = (location.hash || '').replace('#', '');
+    ui.view = VIEWS.includes(h) ? h : 'overview';
+    for (const v of VIEWS) {
+      $('#view-' + v).hidden = v !== ui.view;
+      const t = $('#tab-' + v); t.setAttribute('aria-selected', String(v === ui.view)); t.tabIndex = v === ui.view ? 0 : -1;
+    }
+    if (D) schedule();
+  }
+  function go(v) { if (location.hash !== '#' + v) location.hash = v; else route(); }
+
+  /* ===================== events ===================== */
+  function syncPnlCat() {
+    const cat = radioVal('pnl-cat') || 'gamble';
+    document.querySelectorAll('#pnl-form [data-for]').forEach((el) => { el.hidden = (el.dataset.for === 'gamble') !== (cat === 'gamble'); });
+    $('#pnl-label-list').innerHTML = LABELS[cat].map((o) => `<option value="${esc(o)}"></option>`).join('');
+    $('#pnl-label').placeholder = '例：' + LABELS[cat][0];
+    updatePnlPreview();
+  }
+  function pnlProfit() {
+    const cat = radioVal('pnl-cat');
+    if (cat === 'gamble') {
+      const inv = parseYen($('#pnl-invest').value);
+      const rawOut = $('#pnl-payout').value.trim();
+      const out = rawOut === '' ? 0 : parseYen(rawOut);
+      if (!(inv >= 0) || !(out >= 0)) return null;
+      return { invest: inv, payout: out, profit: out - inv };
+    }
+    const amt = parseYen($('#pnl-amount').value);
+    if (!(amt >= 0)) return null;
+    return { invest: null, payout: null, profit: (radioVal('pnl-sign') === 'loss' ? -1 : 1) * amt };
+  }
+  function updatePnlPreview() { const r = pnlProfit(); $('#pnl-preview').textContent = r ? `損益 ${sYen(r.profit)}` : ''; $('#pnl-preview').className = 'preview span ' + (r ? tone(r.profit) : ''); }
+
+  let editingId = null;
+  function openDebtDialog(id) {
+    editingId = id || null;
+    const d = id ? S.debts.find((x) => x.id === id) : null;
+    const t = todayStr();
+    $('#dd-title').textContent = d ? '借入を編集' : '借入を追加';
+    $('#dd-name').value = d ? d.name : '';
+    setRadio('dd-kind', d ? d.kind || 'loan' : 'loan');
+    $('#dd-opening').value = d ? String(num(d.openingBalance)) : '';
+    $('#dd-start').value = d ? d.startDate : t;
+    $('#dd-rate').value = d && has(d.annualRate) ? String(d.annualRate) : '';
+    $('#dd-monthly').value = d && has(d.monthlyPayment) ? String(d.monthlyPayment) : '';
+    $('#dd-payday').value = d && has(d.payDay) ? String(d.payDay) : '';
+    $('#dd-goal').value = d ? String(num(d.goalAmount)) : '';
+    $('#dd-goaldate').value = d ? d.goalDate : fiscalYearEnd(t);
+    $('#dd-delete').hidden = !d;
+    hideErr('dd');
+    $('#debt-dialog').showModal();
+  }
+
+  function initUI() {
+    const t = todayStr();
+    $('#today-label').textContent = `${Number(t.slice(5, 7))}月${Number(t.slice(8, 10))}日（${WD[new Date(parseD(t)).getUTCDay()]}）`;
+    $('#pay-date').value = t; $('#pnl-date').value = t;
+    document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => go(b.dataset.tab)));
+    $('.tabs').addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const i = VIEWS.indexOf(ui.view), n = VIEWS[(i + (e.key === 'ArrowRight' ? 1 : VIEWS.length - 1)) % VIEWS.length];
+      go(n); $('#tab-' + n).focus();
+    });
+    window.addEventListener('hashchange', route);
+
+    document.addEventListener('click', async (e) => {
+      const goBtn = e.target.closest('[data-go]');
+      if (goBtn) { go(goBtn.dataset.go); const fid = goBtn.dataset.focus; if (fid) setTimeout(() => { const el = document.getElementById(fid); if (el && !el.closest('[hidden]')) el.focus(); }, 80); return; }
+      const ed = e.target.closest('[data-edit]');
+      if (ed) { openDebtDialog(ed.dataset.edit); return; }
+      const dp = e.target.closest('[data-del-pay]');
+      if (dp) {
+        const p = S.payments.find((x) => x.id === dp.dataset.delPay); if (!p) return;
+        const d = S.debts.find((x) => x.id === p.debtId);
+        if (await confirmBox(`${jpDate(p.date)}の返済記録（${d ? d.name + ' ' : ''}${yen(num(p.amount))}）を削除します。`)) await write(() => STORE.remove('payments/' + p.id), '削除しました');
+        return;
+      }
+      const dn = e.target.closest('[data-del-pnl]');
+      if (dn) {
+        const x = S.pnl.find((v) => v.id === dn.dataset.delPnl); if (!x) return;
+        if (await confirmBox(`${jpDate(x.date)}の「${x.label || CAT[x.category]}」（${sYen(num(x.profit))}）を削除します。`)) await write(() => STORE.remove('pnl/' + x.id), '削除しました');
+        return;
+      }
+      const sim = e.target.closest('[data-sim]');
+      if (sim) { $('#sim-amount').value = sim.dataset.sim; renderSim(); }
+    });
+
+    $('#pay-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideErr('pay');
+      const d = S.debts.find((x) => x.id === $('#pay-debt').value);
+      if (!d) return showErr('pay', '先に「＋ 借入を追加」で借入を登録してください。');
+      const amount = parseYen($('#pay-amount').value);
+      if (!(amount > 0)) return showErr('pay', '返済額を数字で入れてください（例：20000）。');
+      const afterRaw = $('#pay-after').value.trim();
+      const after = afterRaw ? parseYen(afterRaw) : null;
+      if (afterRaw && !(after >= 0)) return showErr('pay', '返済後の残高は数字で入れてください。わからなければ空欄で構いません。');
+      const date = $('#pay-date').value || todayStr();
+      const ok = await write(() => STORE.add('payments', { debtId: d.id, date, amount, kind: radioVal('pay-kind') || 'regular', balanceAfter: after, note: $('#pay-note').value.trim().slice(0, 100), createdAt: Date.now() }), `返済を記録しました（${d.name} ${yen(amount)}）`);
+      if (ok) { $('#pay-amount').value = ''; $('#pay-after').value = ''; $('#pay-note').value = ''; }
+    });
+
+    $('#sim-debt').addEventListener('change', renderSim);
+    $('#sim-amount').addEventListener('input', renderSim);
+
+    document.querySelectorAll('input[name="pnl-cat"]').forEach((r) => r.addEventListener('change', syncPnlCat));
+    ['pnl-invest', 'pnl-payout', 'pnl-amount'].forEach((id) => $('#' + id).addEventListener('input', updatePnlPreview));
+    document.querySelectorAll('input[name="pnl-sign"]').forEach((r) => r.addEventListener('change', updatePnlPreview));
+    syncPnlCat();
+    $('#pnl-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideErr('pnl');
+      const cat = radioVal('pnl-cat') || 'gamble';
+      const r = pnlProfit();
+      if (cat === 'gamble' && (!r || !(r.invest > 0))) return showErr('pnl', '投入額を数字で入れてください。回収が0円なら回収額は空欄で構いません。');
+      if (cat !== 'gamble' && (!r || $('#pnl-amount').value.trim() === '')) return showErr('pnl', '金額を数字で入れてください。');
+      const label = ($('#pnl-label').value.trim() || LABELS[cat][0]).slice(0, 40);
+      const date = $('#pnl-date').value || todayStr();
+      const ok = await write(() => STORE.add('pnl', { date, category: cat, label, invest: r.invest, payout: r.payout, profit: r.profit, note: $('#pnl-note').value.trim().slice(0, 200), createdAt: Date.now() }), `記録しました（${label} ${sYen(r.profit)}）`);
+      if (ok) { ['pnl-invest', 'pnl-payout', 'pnl-amount', 'pnl-note'].forEach((id) => { $('#' + id).value = ''; }); updatePnlPreview(); }
+    });
+    document.querySelectorAll('input[name="pnl-range"]').forEach((r) => r.addEventListener('change', () => { ui.pnlRange = radioVal('pnl-range'); renderPnl(); }));
+
+    ['bn-net', 'bn-buffer', 'bn-study', 'bn-date'].forEach((id) => $('#' + id).addEventListener('input', renderBonusResult));
+    $('#bn-alloc').addEventListener('input', renderBonusResult);
+    $('#bn-suggest').addEventListener('click', () => {
+      hideErr('bn');
+      const st = bonusState();
+      if (!(st.net > 0)) return showErr('bn', '先に手取り額を入れてください。');
+      let avail = Math.max(0, st.net - st.buffer - st.study);
+      for (const d of D.debts) { const el = document.getElementById('bn-a-' + d.id); if (el) el.value = ''; }
+      for (const d of [...D.debts].sort(byPriority)) {
+        const give = Math.min(avail, D.R[d.id].remaining);
+        avail -= give;
+        const el = document.getElementById('bn-a-' + d.id); if (el && give > 0) el.value = String(give);
+      }
+      renderBonusResult();
+      toast('おすすめ配分を入れました');
+    });
+    $('#bn-save').addEventListener('click', async () => {
+      const st = bonusState();
+      await write(() => STORE.set('meta/bonus', { date: st.date, net: st.net, buffer: st.buffer, study: st.study, alloc: st.alloc, savedAt: Date.now() }), '配分を保存しました');
+    });
+    $('#bn-record').addEventListener('click', async () => {
+      hideErr('bn');
+      const st = bonusState();
+      const items = D.debts.filter((d) => st.alloc[d.id] > 0);
+      if (!items.length) return showErr('bn', '返済に回す額を入れてください。');
+      const t = todayStr();
+      const date = st.date && st.date <= t ? st.date : t;
+      const msg = `${jpDate(date)}付けで、${items.map((d) => `${d.name} ${yen(st.alloc[d.id])}`).join('、')} を「ボーナス返済」として記録します。実際に返済してから押してください。`;
+      if (!(await confirmBox(msg, '記録する', false))) return;
+      const ok = await write(async () => { for (const d of items) await STORE.add('payments', { debtId: d.id, date, amount: st.alloc[d.id], kind: 'bonus', balanceAfter: null, note: 'ボーナスから', createdAt: Date.now() }); }, 'ボーナス返済を記録しました');
+      if (ok) for (const d of items) { const el = document.getElementById('bn-a-' + d.id); if (el) el.value = ''; }
+    });
+
+    $('#add-debt').addEventListener('click', () => openDebtDialog(null));
+    $('#dd-cancel').addEventListener('click', () => $('#debt-dialog').close());
+    document.querySelectorAll('input[name="dd-kind"]').forEach((r) => r.addEventListener('change', () => { if (radioVal('dd-kind') === 'family' && !$('#dd-rate').value) $('#dd-rate').value = '0'; }));
+    $('#debt-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideErr('dd');
+      const name = $('#dd-name').value.trim();
+      const kind = radioVal('dd-kind') || 'loan';
+      const opening = parseYen($('#dd-opening').value);
+      const start = $('#dd-start').value;
+      const rate = parseRate($('#dd-rate').value);
+      const monthlyRaw = $('#dd-monthly').value.trim();
+      const monthly = monthlyRaw ? parseYen(monthlyRaw) : null;
+      const paydayRaw = toHalf($('#dd-payday').value.trim()).replace(/日$/, '');
+      const payday = paydayRaw ? Number(paydayRaw) : null;
+      const goal = parseYen($('#dd-goal').value);
+      const goalDate = $('#dd-goaldate').value;
+      if (!name) return showErr('dd', '名前を入れてください。');
+      if (!(opening > 0)) return showErr('dd', '開始時点の残高を数字で入れてください。');
+      if (!start) return showErr('dd', '開始日を入れてください。');
+      if (Number.isNaN(rate) || (rate !== null && (rate < 0 || rate > 100))) return showErr('dd', '年利は0〜100の数字で入れてください。わからなければ空欄で構いません。');
+      if (monthlyRaw && !(monthly > 0)) return showErr('dd', '毎月の返済額は数字で入れてください。');
+      if (paydayRaw && !(Number.isInteger(payday) && payday >= 1 && payday <= 31)) return showErr('dd', '返済日は1〜31の数字で入れてください。');
+      if (!(goal > 0)) return showErr('dd', '目標の返済額を数字で入れてください。');
+      if (goal > opening) return showErr('dd', '目標の返済額は、開始時点の残高以下にしてください。');
+      if (!goalDate || goalDate <= start) return showErr('dd', '目標日は開始日より後の日付にしてください。');
+      const base = editingId ? S.debts.find((x) => x.id === editingId) : null;
+      const data = { name: name.slice(0, 40), kind, openingBalance: opening, startDate: start, annualRate: rate === null ? (kind === 'family' ? 0 : null) : rate, monthlyPayment: monthly, payDay: payday, goalAmount: goal, goalDate, order: base ? num(base.order) : S.debts.length, createdAt: base ? num(base.createdAt) : Date.now(), updatedAt: Date.now() };
+      const id = editingId;
+      const ok = await write(() => (id ? STORE.set('debts/' + id, data) : STORE.add('debts', data)), id ? '借入を更新しました' : '借入を追加しました');
+      if (ok) $('#debt-dialog').close();
+    });
+    $('#dd-delete').addEventListener('click', async () => {
+      const d = S.debts.find((x) => x.id === editingId); if (!d) return;
+      const pays = S.payments.filter((p) => p.debtId === d.id);
+      $('#debt-dialog').close();
+      if (!(await confirmBox(`「${d.name}」と返済の記録${pays.length}件を削除します。元に戻せません。`))) return;
+      await write(async () => { for (const p of pays) await STORE.remove('payments/' + p.id); await STORE.remove('debts/' + d.id); }, '削除しました');
+    });
+
+    $('#exp-pay').addEventListener('click', () => exportCsv('pay'));
+    $('#exp-pnl').addEventListener('click', () => exportCsv('pnl'));
+    $('#exp-copy').addEventListener('click', async () => {
+      const ta = $('#exp-text');
+      try { await navigator.clipboard.writeText(ta.value); toast('コピーしました'); } catch (err) { ta.focus(); ta.select(); toast('選択しました。コピーしてください'); }
+    });
+    $('#migrate').addEventListener('click', async () => {
+      const dump = LOCAL.dump(), n = LOCAL.count();
+      if (!(await confirmBox(`この端末に一時保存した${n}件をクラウドに移します。`, '移す', false))) return;
+      const ok = await write(async () => {
+        for (const col of ['debts', 'payments', 'pnl']) for (const [id, data] of Object.entries(dump[col] || {})) await STORE.set(`${col}/${id}`, data);
+        if (dump.meta && dump.meta.bonus && !S.bonus) await STORE.set('meta/bonus', dump.meta.bonus);
+      }, 'クラウドに移しました');
+      if (ok) { LOCAL.clear(); renderData(); }
+    });
+    $('#wipe').addEventListener('click', async () => {
+      if (!(await confirmBox('借入・返済・特別損益・ボーナス配分の記録をすべて削除します。元に戻せません。', 'すべて削除'))) return;
+      const pays = [...S.payments], pnl = [...S.pnl], debts = [...S.debts];
+      await write(async () => {
+        for (const p of pays) await STORE.remove('payments/' + p.id);
+        for (const x of pnl) await STORE.remove('pnl/' + x.id);
+        for (const d of debts) await STORE.remove('debts/' + d.id);
+        await STORE.remove('meta/bonus');
+      }, 'すべて削除しました');
+    });
+
+    if ('ResizeObserver' in window) {
+      let rt = 0;
+      const ro = new ResizeObserver(() => {
+        clearTimeout(rt);
+        rt = setTimeout(() => {
+          if (!D) return;
+          if (ui.view === 'debts' && Math.round($('#bal-chart').clientWidth) !== balW) renderBalanceChart();
+          if (ui.view === 'pnl' && lastPnlArgs && Math.round($('#pnl-chart').clientWidth) !== pnlW) renderPnlChart(...lastPnlArgs);
+        }, 80);
+      });
+      ro.observe($('#bal-chart')); ro.observe($('#pnl-chart'));
+    }
+  }
+
+  /* ===================== boot ===================== */
+  function subscribeAll() {
+    const fresh = new Set();
+    const timer = setTimeout(() => { if (!S.synced) { S.stale = true; renderSync(); } }, 10000);
+    const mark = (key, meta) => {
+      if (meta && meta.fromCache) return;
+      fresh.add(key);
+      if (fresh.size >= 4 && !S.synced) { S.synced = true; S.stale = false; clearTimeout(timer); renderSync(); }
+    };
+    const onErr = (e) => {
+      const code = e && e.code;
+      if (code === 'revoked' || code === 'not_granted') S.readOnly = true;
+      else S.subError = code === 'unavailable' ? '保存先との接続が切れました。ページを開き直してください。' : '記録を読み込めませんでした。ページを開き直してください。';
+      clearTimeout(timer); renderSync();
+    };
+    STORE.subscribe('debts', (rows, meta) => { S.debts = rows; S.loaded.debts = true; mark('debts', meta); schedule(); }, onErr);
+    STORE.subscribe('payments', (rows, meta) => { S.payments = rows; S.loaded.payments = true; mark('payments', meta); schedule(); }, onErr);
+    STORE.subscribe('pnl', (rows, meta) => { S.pnl = rows; S.loaded.pnl = true; mark('pnl', meta); schedule(); }, onErr);
+    STORE.subscribeDoc('meta/bonus', (data, meta) => { S.bonus = data; S.loaded.bonus = true; mark('bonus', meta); schedule(); }, onErr);
+  }
+
+  async function boot() {
+    initUI();
+    route();
+    renderSync();
+    const c = window.claude;
+    if (!c || typeof c.use !== 'function') {
+      STORE = LOCAL; S.mode = 'local-file'; S.synced = true;
+      subscribeAll(); renderSync();
+      return;
+    }
+    let db = null, user = null;
+    try { [db, user, DOWNLOADS] = await Promise.all([c.use('db'), c.use('user'), c.use('downloads')]); } catch (e) { /* treat as unavailable */ }
+    if (user) { try { if ((await user.isOwner()) === false) S.readOnly = true; } catch (e) { /* keep editable */ } }
+    if (db) { STORE = new CloudStore(db); S.mode = 'cloud'; }
+    else { STORE = LOCAL; S.mode = 'local-fallback'; S.synced = true; }
+    subscribeAll(); renderSync();
+  }
+
+  boot();
+})();
+</script>
