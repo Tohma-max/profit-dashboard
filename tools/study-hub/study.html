@@ -1355,7 +1355,89 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
     };
   }
 
+  /* ---------- 住民税（令和8年度＝令和7年中の所得） ---------- */
+  // 給与所得控除（令和7年分以降）：190万円以下は65万円、それより上の区分は従来どおり。
+  const KYUYO = [[1900000, 0, 650000], [3600000, 30, 80000], [6600000, 20, 440000], [8500000, 10, 1100000], [Infinity, 0, 1950000]];
+  const kyuyoDeduction = (r) => { const row = KYUYO.find((x) => r <= x[0]); return row[1] ? (r * row[1]) / 100 + row[2] : row[2]; };
+  const kyuyoStep = (r) => { const row = KYUYO.find((x) => r <= x[0]); const d = kyuyoDeduction(r); if (r <= 1900000) return `給与の収入金額が190万円以下なので、給与所得控除額は65万円（最低保障額）`; if (!row[1]) return '給与の収入金額が850万円を超えるので、給与所得控除額は195万円（上限）'; return `給与所得控除額 = ${nf(r)}円 × ${row[1]}% + ${nf(row[2])}円 = ${nf(d)}円`; };
+  // 調整控除：課税所得200万円以下は min(人的控除差, 課税所得)×5%、超えると {人的控除差−(課税所得−200万円)}×5%（最低2,500円）。市3%・県2%に分ける。
+  function chosei(T, H) {
+    if (T <= 2000000) { const base = Math.min(H, T); return { city: (base * 3) / 100, pref: (base * 2) / 100, total: (base * 5) / 100, base, rule: 'le' }; }
+    const base = H - (T - 2000000);
+    if ((base * 5) / 100 < 2500) return { city: 1500, pref: 1000, total: 2500, base, rule: 'min' };
+    return { city: (base * 3) / 100, pref: (base * 2) / 100, total: (base * 5) / 100, base, rule: 'gt' };
+  }
+  const choseiSteps = (T, H, c) => (c.rule === 'le'
+    ? [`課税総所得金額が200万円以下なので、人的控除額の差 ${nf(H)}円 と課税総所得金額 ${nf(T)}円 の少ないほう ${nf(c.base)}円 × 5% = ${nf(c.total)}円`]
+    : c.rule === 'min'
+      ? [`200万円を超えるので {${nf(H)}円 −（${nf(T)}円 − 200万円）} × 5% を計算すると2,500円未満になり、調整控除額は2,500円（市1,500円・県1,000円）`]
+      : [`200万円を超えるので {${nf(H)}円 −（${nf(T)}円 − 200万円）} × 5% = ${nf(c.base)}円 × 5% = ${nf(c.total)}円`]);
+  const jinteki = (spouse, n) => [`基礎控除 5万円`, ...(spouse ? ['配偶者控除（一般）5万円'] : []), ...(n ? [`扶養控除（一般）5万円 × ${n}人`] : [])].join(' + ');
+
+  function zKyuyo() {
+    const r = R(375, 3000) * 4000, d = kyuyoDeduction(r), g = r - d;
+    return {
+      title: '給与所得の金額（令和7年分以降の給与所得控除）', text: '令和7年中の給与の収入金額から、給与所得の金額を求める（令和8年度の個人住民税で使う）。',
+      given: [['給与の収入金額', `${nf(r)}円`]],
+      ask: '給与所得控除額と給与所得の金額を求めなさい。',
+      fields: [{ label: '給与所得控除額', unit: '円', answer: d }, { label: '給与所得の金額', unit: '円', answer: g }],
+      steps: [kyuyoStep(r), `給与所得の金額 = ${nf(r)}円 − ${nf(d)}円 = ${nf(g)}円`, '660万円未満は本来、4,000円刻みの表（所得税法の別表第五）で求める。この問題の収入は4,000円単位なので、式と同じ結果になる。'],
+    };
+  }
+  function zChosei() {
+    const spouse = Math.random() < 0.5, n = R(0, 2);
+    const H = 50000 + (spouse ? 50000 : 0) + 50000 * n;
+    const T = Math.random() < 0.45 ? R(30, 200) * 10000 : R(201, 260) * 10000;
+    const c = chosei(T, H);
+    return {
+      title: '調整控除（個人住民税）', text: `合計所得金額が2,500万円以下の給与所得者。所得控除のうち人的控除は、基礎控除${spouse ? '・配偶者控除（一般）' : ''}${n ? `・扶養控除（一般）${n}人分` : ''}だけ。`,
+      given: [['合計課税所得金額', `${nf(T)}円`], ['人的控除', `基礎控除${spouse ? '、配偶者控除（一般）' : ''}${n ? `、扶養控除（一般）×${n}人` : ''}`]],
+      ask: '人的控除額の差の合計と、調整控除額（市町村民税と道府県民税の合計）を求めなさい。',
+      fields: [{ label: '人的控除額の差の合計', unit: '円', answer: H }, { label: '調整控除額（合計）', unit: '円', answer: c.total }],
+      steps: [`人的控除額の差 = ${jinteki(spouse, n)} = ${nf(H)}円`, ...choseiSteps(T, H, c), `内訳は市町村民税 ${nf(c.city)}円・道府県民税 ${nf(c.pref)}円（3%と2%で分ける）`],
+    };
+  }
+  function zFull() {
+    for (let k = 0; k < 60; k++) {
+      const r = R(750, 2000) * 4000;
+      const g = r - kyuyoDeduction(r);
+      const spouse = Math.random() < 0.5, n = pick([0, 0, 1, 2]);
+      const S = Math.round((r * R(140, 155)) / 1000 / 100) * 100;
+      const D = S + 430000 + (spouse ? 330000 : 0) + 330000 * n;
+      const T = Math.floor((g - D) / 1000) * 1000;
+      if (T <= 0) continue;
+      const H = 50000 + (spouse ? 50000 : 0) + 50000 * n;
+      const c = chosei(T, H);
+      const cityRaw = (T * 6) / 100 - c.city, prefRaw = (T * 4) / 100 - c.pref;
+      const city = Math.max(0, Math.floor(cityRaw / 100) * 100), pref = Math.max(0, Math.floor(prefRaw / 100) * 100);
+      const wari = city + pref, total = wari + 4000;
+      return {
+        title: '給与所得者の個人住民税（令和8年度）', text: '令和7年中の所得で令和8年度の住民税を計算する。給与以外の所得と税額控除はなく、合計所得金額は900万円以下。森林環境税（年1,000円・国税）は含めない。',
+        given: [['給与の収入金額', `${nf(r)}円`], ['社会保険料', `${nf(S)}円`], ['配偶者', spouse ? 'あり（収入なし）' : 'なし'], ['16歳以上の扶養親族', n ? `${n}人（収入なし）` : 'なし'], ['所得割の税率', '市町村民税6%・道府県民税4%'], ['均等割', '市町村民税3,000円・道府県民税1,000円'], ['端数', '所得割は市町村民税・道府県民税ごとに100円未満切り捨て']],
+        ask: '給与所得の金額、課税総所得金額、調整控除額、所得割額（2税の合計）、年税額（均等割を含む）を求めなさい。',
+        fields: [{ label: '給与所得の金額', unit: '円', answer: g }, { label: '課税総所得金額', unit: '円', answer: T }, { label: '調整控除額（合計）', unit: '円', answer: c.total }, { label: '所得割額（合計）', unit: '円', answer: wari }, { label: '年税額', unit: '円', answer: total }],
+        steps: [
+          kyuyoStep(r) + `。給与所得の金額 = ${nf(g)}円`,
+          `所得控除 = 社会保険料 ${nf(S)}円 + 基礎控除43万円${spouse ? ' + 配偶者控除33万円' : ''}${n ? ` + 扶養控除33万円 × ${n}人` : ''} = ${nf(D)}円`,
+          `課税総所得金額 = ${nf(g)}円 − ${nf(D)}円 = ${nf(g - D)}円 → 1,000円未満を切り捨てて ${nf(T)}円`,
+          `人的控除額の差 = ${jinteki(spouse, n)} = ${nf(H)}円`,
+          ...choseiSteps(T, H, c),
+          `市町村民税の所得割 = ${nf(T)}円 × 6% − ${nf(c.city)}円 = ${nf(cityRaw)}円 → ${nf(city)}円`,
+          `道府県民税の所得割 = ${nf(T)}円 × 4% − ${nf(c.pref)}円 = ${nf(prefRaw)}円 → ${nf(pref)}円`,
+          `年税額 = 所得割 ${nf(wari)}円 + 均等割 4,000円 = ${nf(total)}円`,
+          '均等割や所得割は、条例で上乗せ（超過課税）している自治体があり、指定都市は所得割が市8%・県2%。実際の税額は自治体ごとの設定で確認する。',
+        ],
+      };
+    }
+    return zKyuyo();
+  }
+
   const GENS = {
+    zei: [
+      { id: 'zkyuyo', name: '給与所得の金額', area: 'tax', fn: zKyuyo },
+      { id: 'zchosei', name: '調整控除', area: 'tax', fn: zChosei },
+      { id: 'zfull', name: '給与所得者の住民税（一式）', area: 'tax', fn: zFull },
+    ],
     fp2: [
       { id: 'coef', name: '6つの係数', area: 'life', fn: fCoef },
       { id: 'retire', name: '退職所得', area: 'tax', fn: fRetire },
@@ -1382,11 +1464,13 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
 
   const drill = { sid: uid(), exam: 'boki2', q: null, prev: null, shownAt: 0, answered: false, count: 0, total: 0, correct: 0, ms: 0, perArea: {} };
   window.StudyDrillState = drill;
-  const drillExams = () => KEYS.filter((k) => GENS[k].length);
+  const DRILL_KEYS = ['boki2', 'fp2', 'zei'];
+  const DRILL_LABEL = { boki2: '簿記2級', fp2: 'FP2級', zei: '住民税' };
+  const drillExams = () => DRILL_KEYS.filter((k) => GENS[k] && GENS[k].length);
   function setupDrillControls() {
     const list = drillExams();
     if (!list.includes(drill.exam)) drill.exam = list[0];
-    $('#dr-exam-seg').innerHTML = list.map((k) => `<input type="radio" name="dr-exam" id="dr-exam-${k}" value="${k}"${k === drill.exam ? ' checked' : ''}><label for="dr-exam-${k}">${esc(EXAMS[k].name)}</label>`).join('');
+    $('#dr-exam-seg').innerHTML = list.map((k) => `<input type="radio" name="dr-exam" id="dr-exam-${k}" value="${k}"${k === drill.exam ? ' checked' : ''}><label for="dr-exam-${k}">${esc(DRILL_LABEL[k])}</label>`).join('');
     $('#dr-exam-field').hidden = list.length < 2;
     fillTopics();
   }
@@ -1394,6 +1478,7 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
     $('#dr-topic').innerHTML = '<option value="auto">おまかせ（正答率の低い論点を多めに）</option>' + GENS[drill.exam].map((g) => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
   }
   function pickAuto(exam) {
+    if (!EXAMS[exam]) { const others = GENS[exam].filter((g) => g.id !== drill.prev); return pick(others.length ? others : GENS[exam]); }
     const st = Object.fromEntries(areaStats(exam).map((s) => [s.id, s]));
     const gens = GENS[exam];
     const w = gens.map((g) => { const s = st[g.area]; const acc = s && s.acc !== null ? s.acc : 0.4; return Math.max(0.08, 1 - acc) * (drill.prev === g.id ? 0.3 : 1); });
@@ -1407,7 +1492,9 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
     const topic = $('#dr-topic').value;
     const g = topic && topic !== 'auto' ? gens.find((x) => x.id === topic) || gens[0] : pickAuto(drill.exam);
     const q = g.fn();
-    q.genId = g.id; q.exam = drill.exam; q.area = q.area || g.area;
+    // 住民税の練習はFP2のタックスプランニングとして記録する
+    q.genId = g.id; q.exam = EXAMS[drill.exam] ? drill.exam : 'fp2'; q.area = q.area || g.area;
+    q.chip = drill.exam === 'zei' ? '住民税（令和8年度）' : areaName(q.exam, q.area);
     drill.q = q; drill.prev = g.id; drill.shownAt = Date.now(); drill.answered = false; drill.count += 1;
     const fieldHtml = q.fields.map((f, i) => `<div class="ans" id="dr-ans-${i}">
         <label for="dr-a${i}">${esc(f.label)}</label>
@@ -1418,7 +1505,7 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
         <p class="ans-result" id="dr-r${i}" hidden></p>
       </div>`).join('');
     $('#dr-card').innerHTML = `
-      <div class="q-head"><span class="chip">${esc(areaName(q.exam, q.area))}</span><span class="muted small">今回 ${drill.count}問目</span></div>
+      <div class="q-head"><span class="chip">${esc(q.chip)}</span><span class="muted small">今回 ${drill.count}問目</span></div>
       <h2 class="q-title">${esc(q.title)}</h2>
       ${q.text ? `<p class="q-text">${esc(q.text)}</p>` : ''}
       <table class="given"><tbody>${q.given.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
@@ -1513,6 +1600,11 @@ textarea { font: inherit; font-size: 16px; line-height: 1.6; resize: vertical; }
     ['f24', 'fp2', 'fin', 'PERとPBRの計算式は？', 'PERは株価÷1株あたり純利益。PBRは株価÷1株あたり純資産。'],
     ['f25', 'fp2', 'fin', 'ROEの計算式は？', '当期純利益÷自己資本×100。'],
     ['f26', 'fp2', 'fin', '配当性向の計算式は？', '配当金の総額÷当期純利益×100。'],
+    ['z01', 'fp2', 'tax', '令和8年度の住民税で、給与所得控除の最低保障額は？', '65万円。給与の収入金額が190万円以下のとき。'],
+    ['z02', 'fp2', 'tax', '調整控除で使う、基礎控除の人的控除額の差は？', '5万円。配偶者控除（一般）と扶養控除（一般）の差も5万円。'],
+    ['z03', 'fp2', 'tax', '合計課税所得金額が200万円以下のときの調整控除は？', '人的控除額の差の合計と、合計課税所得金額の少ないほうの5%。'],
+    ['z04', 'fp2', 'tax', '合計課税所得金額が200万円を超えるときの調整控除は？', '（人的控除額の差の合計−（合計課税所得金額−200万円））×5%。2,500円未満なら2,500円。'],
+    ['z05', 'fp2', 'tax', '調整控除が受けられないのはどんな人？', '合計所得金額が2,500万円を超える人。'],
     ['b01', 'boki2', 'hyojun', '直接材料費の価格差異の計算式は？', '（標準単価−実際単価）×実際消費量。'],
     ['b02', 'boki2', 'hyojun', '直接材料費の数量差異の計算式は？', '（標準消費量−実際消費量）×標準単価。'],
     ['b03', 'boki2', 'hyojun', '直接労務費の賃率差異の計算式は？', '（標準賃率−実際賃率）×実際作業時間。'],
