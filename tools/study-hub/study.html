@@ -218,6 +218,35 @@ dialog::backdrop { background: var(--overlay); }
 #toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px); opacity: 0; background: var(--ink); color: var(--surface); padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 0.9rem; transition: opacity 0.2s, transform 0.2s; z-index: 20; pointer-events: none; max-width: calc(100vw - 32px); text-align: center; }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* drill */
+.qcard { display: grid; gap: 12px; scroll-margin-top: calc(110px + env(safe-area-inset-top, 0px)); }
+.q-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.q-title { margin: 0; font-family: var(--font-display); font-size: 1.12rem; text-wrap: balance; }
+.q-text, .q-ask { margin: 0; }
+.q-ask { font-weight: 700; }
+.given { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.given th { text-align: left; font-weight: 700; color: var(--ink-2); padding: 7px 10px 7px 0; border-bottom: 1px solid var(--grid); vertical-align: top; }
+.given td { padding: 7px 0; border-bottom: 1px solid var(--grid); font-family: var(--font-data); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.answers { display: grid; gap: 12px; }
+.ans { display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--rule); }
+.ans.is-ok { background: var(--good-bg); border-color: transparent; }
+.ans.is-ng { background: var(--crit-bg); border-color: transparent; }
+.ans > label { font-weight: 700; }
+.ans-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.ans-in { display: flex; align-items: center; gap: 6px; flex: 1 1 150px; min-width: 0; }
+.ans-in input { background: var(--surface); font-family: var(--font-data); text-align: right; }
+.ans-in input:disabled { opacity: 1; color: var(--ink); }
+.unit { font-weight: 700; color: var(--ink-2); }
+.ans-result { margin: 0; font-weight: 700; }
+.ans-result.ok { color: var(--good-ink); }
+.ans-result.ng { color: var(--crit-ink); }
+.explain { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; }
+.explain h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 0.95rem; }
+.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; font-size: 0.9rem; }
+.score { margin: 0; font-weight: 700; font-size: 1.05rem; }
+.score.ok { color: var(--good-ink); }
+.score.ng { color: var(--crit-ink); }
+
 @media (max-width: 480px) {
   .calc > div { grid-template-columns: 1fr; gap: 0; }
 }
@@ -237,6 +266,7 @@ dialog::backdrop { background: var(--overlay); }
       <button type="button" class="tab" role="tab" id="tab-plan" data-tab="plan" aria-controls="view-plan" aria-selected="false" tabindex="-1">計画</button>
       <button type="button" class="tab" role="tab" id="tab-log" data-tab="log" aria-controls="view-log" aria-selected="false" tabindex="-1">記録</button>
       <button type="button" class="tab" role="tab" id="tab-weak" data-tab="weak" aria-controls="view-weak" aria-selected="false" tabindex="-1">弱点</button>
+      <button type="button" class="tab" role="tab" id="tab-drill" data-tab="drill" aria-controls="view-drill" aria-selected="false" tabindex="-1">ドリル</button>
     </nav>
   </div>
 </header>
@@ -338,6 +368,26 @@ dialog::backdrop { background: var(--overlay); }
     <div class="panel"><h2><span class="swatch" style="background:var(--series-2);display:inline-block;margin:0 8px 0 0"></span>簿記2級</h2><div class="table-scroll" id="wk-boki2"></div></div>
     <p class="hint">正答率は、記録した「解いた問題数・正解数」の直近30問から計算します。バーの黒い線が合格ライン（FP2：6割、簿記2級：7割）です。</p>
   </section>
+
+  <section class="view" id="view-drill" role="tabpanel" aria-labelledby="tab-drill" hidden>
+    <div class="panel">
+      <div class="form-grid">
+        <div class="field" id="dr-exam-field"><span class="label" id="dr-exam-label">試験</span>
+          <div class="seg" role="radiogroup" aria-labelledby="dr-exam-label" id="dr-exam-seg"></div>
+        </div>
+        <div class="field"><span class="label" id="dr-place-label">場所</span>
+          <div class="seg" role="radiogroup" aria-labelledby="dr-place-label">
+            <input type="radio" name="dr-place" id="dr-place-commute" value="commute" checked><label for="dr-place-commute">通勤</label>
+            <input type="radio" name="dr-place" id="dr-place-lunch" value="lunch"><label for="dr-place-lunch">昼休み</label>
+            <input type="radio" name="dr-place" id="dr-place-home" value="home"><label for="dr-place-home">家</label>
+          </div>
+        </div>
+        <div class="field span"><label for="dr-topic">論点</label><select id="dr-topic"></select></div>
+      </div>
+    </div>
+    <article class="panel qcard" id="dr-card"><p class="empty">問題を準備しています…</p></article>
+    <div class="panel"><h2>今回の成績</h2><div id="dr-session"><p class="empty">まだ解いていません。</p></div><p class="hint">答え合わせをするたびに、結果が「記録」と「弱点」に入ります（論点ごとに1件にまとめます）。</p></div>
+  </section>
 </main>
 
 <dialog id="log-dialog" aria-labelledby="ld-title">
@@ -395,7 +445,7 @@ dialog::backdrop { background: var(--overlay); }
   const f1 = (n) => n.toFixed(1);
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
   const WD = '日月火水木金土';
-  const toHalf = (s) => String(s).replace(/[０-９．]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+  const toHalf = (s) => String(s).replace(/[０-９．－]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
   const pct0 = (r) => Math.round(r * 100) + '%';
   function parseIntSafe(v) { const s = toHalf(String(v ?? '').trim()).replace(/[,，分\s]/g, ''); if (!/^\d+$/.test(s)) return NaN; return Number(s); }
   function parseHours(v) { const s = toHalf(String(v ?? '').trim()).replace(/[,，時間h\s]/g, ''); if (s === '') return null; if (!/^\d+(\.\d+)?$/.test(s)) return NaN; return Number(s); }
@@ -469,7 +519,7 @@ dialog::backdrop { background: var(--overlay); }
   /* ===================== state & planning ===================== */
   const S = { exams: {}, logs: [], plan: null, loaded: { exams: false, logs: false, plan: false }, mode: 'loading', synced: false, stale: false, readOnly: false, subError: '' };
   let STORE = null, DOWNLOADS = null, D = null;
-  const VIEWS = ['today', 'plan', 'log', 'weak'];
+  const VIEWS = ['today', 'plan', 'log', 'weak', 'drill'];
   const ui = { view: 'today' };
 
   function examList() {
@@ -808,6 +858,351 @@ dialog::backdrop { background: var(--overlay); }
     $('#log-dialog').showModal();
   }
 
+  /* ===================== drills: random-number problems ===================== */
+  const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const nz = (a, b) => { let v = 0; while (v === 0) v = R(a, b); return v; };
+  const nf = (n) => Math.round(n).toLocaleString('ja-JP');
+  const yenStr = (n) => (Math.round(n) < 0 ? '−' : '') + nf(Math.abs(n)) + '円';
+  const diffStr = (n) => `${n < 0 ? '−' : '+'}${nf(Math.abs(n))}円（${n < 0 ? '不利差異・借方' : '有利差異・貸方'}）`;
+  function parseNum(v) {
+    const s = toHalf(String(v ?? '').trim()).replace(/[,，円¥￥%％\s]/g, '').replace(/^[−ー–]/, '-');
+    if (!/^-?\d+(\.\d+)?$/.test(s)) return NaN;
+    return Number(s);
+  }
+
+  function gMaterial() {
+    const ps = pick([100, 120, 150, 200, 250, 300, 400, 500]);
+    const pa = ps + nz(-6, 6) * (ps >= 300 ? 5 : ps >= 150 ? 2 : 1);
+    const qu = pick([2, 3, 4, 5]);
+    const n = R(8, 30) * 50;
+    const Qs = qu * n, Qa = Qs + nz(-12, 12) * 10;
+    const byTotal = Math.random() < 0.5;
+    const price = (ps - pa) * Qa, qty = (Qs - Qa) * ps;
+    return {
+      title: '直接材料費の差異分析', text: '標準原価計算を採用している。月初・月末の仕掛品はない。',
+      given: [['直接材料の標準単価', `1kgあたり ${nf(ps)}円`], ['製品1個あたりの標準消費量', `${qu}kg`], ['当月の生産量', `${nf(n)}個`], ['実際消費量', `${nf(Qa)}kg`], byTotal ? ['実際直接材料費', `${nf(pa * Qa)}円`] : ['実際単価', `1kgあたり ${nf(pa)}円`]],
+      ask: '価格差異と数量差異を求めなさい。',
+      fields: [{ label: '価格差異', unit: '円', answer: price, diff: true }, { label: '数量差異', unit: '円', answer: qty, diff: true }],
+      steps: [
+        `標準消費量 = ${qu}kg × ${nf(n)}個 = ${nf(Qs)}kg`,
+        ...(byTotal ? [`実際単価 = ${nf(pa * Qa)}円 ÷ ${nf(Qa)}kg = ${nf(pa)}円`] : []),
+        `価格差異 =（標準単価 ${nf(ps)}円 − 実際単価 ${nf(pa)}円）× 実際消費量 ${nf(Qa)}kg = ${diffStr(price)}`,
+        `数量差異 =（標準消費量 ${nf(Qs)}kg − 実際消費量 ${nf(Qa)}kg）× 標準単価 ${nf(ps)}円 = ${diffStr(qty)}`,
+        '「標準 − 実際」がマイナスなら不利差異（借方）、プラスなら有利差異（貸方）。',
+      ],
+    };
+  }
+
+  function gLabor() {
+    const rs = pick([1000, 1200, 1400, 1500, 1600, 1800, 2000]);
+    const ra = rs + nz(-6, 6) * 10;
+    const hu = pick([0.5, 1, 1.5, 2]);
+    const n = R(10, 40) * 20;
+    const Hs = hu * n, Ha = Hs + nz(-8, 8) * 5;
+    const rate = (rs - ra) * Ha, time = (Hs - Ha) * rs;
+    return {
+      title: '直接労務費の差異分析', text: '標準原価計算を採用している。月初・月末の仕掛品はない。',
+      given: [['標準賃率', `1時間あたり ${nf(rs)}円`], ['製品1個あたりの標準直接作業時間', `${hu}時間`], ['当月の生産量', `${nf(n)}個`], ['実際直接作業時間', `${nf(Ha)}時間`], ['実際直接労務費', `${nf(ra * Ha)}円`]],
+      ask: '賃率差異と時間差異を求めなさい。',
+      fields: [{ label: '賃率差異', unit: '円', answer: rate, diff: true }, { label: '時間差異', unit: '円', answer: time, diff: true }],
+      steps: [
+        `標準直接作業時間 = ${hu}時間 × ${nf(n)}個 = ${nf(Hs)}時間`,
+        `実際賃率 = ${nf(ra * Ha)}円 ÷ ${nf(Ha)}時間 = ${nf(ra)}円`,
+        `賃率差異 =（標準賃率 ${nf(rs)}円 − 実際賃率 ${nf(ra)}円）× 実際作業時間 ${nf(Ha)}時間 = ${diffStr(rate)}`,
+        `時間差異 =（標準作業時間 ${nf(Hs)}時間 − 実際作業時間 ${nf(Ha)}時間）× 標準賃率 ${nf(rs)}円 = ${diffStr(time)}`,
+      ],
+    };
+  }
+
+  function gOverhead() {
+    const B = R(12, 30) * 100;
+    const v = pick([300, 400, 500, 600, 800]);
+    const f = pick([500, 600, 700, 800, 1000, 1200]);
+    const F = f * B;
+    const hu = pick([0.5, 1, 2]);
+    const n = Math.max(20, Math.round((B * R(85, 99)) / 100 / hu / 20) * 20);
+    const Hs = hu * n, Ha = Hs + nz(-8, 8) * 5;
+    if (Ha === B) return gOverhead();
+    const allowed = v * Ha + F;
+    const A = allowed - nz(-30, 30) * 1000;
+    const budget = allowed - A, eff = (v + f) * (Hs - Ha), vol = f * (Ha - B);
+    return {
+      title: '製造間接費の差異分析（公式法変動予算）', text: '製造間接費は直接作業時間を基準に標準配賦している。月初・月末の仕掛品はない。',
+      given: [['月間の基準操業度', `${nf(B)}時間`], ['変動費率', `1時間あたり ${nf(v)}円`], ['固定費予算額（月額）', `${nf(F)}円`], ['製品1個あたりの標準直接作業時間', `${hu}時間`], ['当月の生産量', `${nf(n)}個`], ['実際直接作業時間', `${nf(Ha)}時間`], ['製造間接費の実際発生額', `${nf(A)}円`]],
+      ask: '予算差異・能率差異・操業度差異を求めなさい。能率差異は変動費と固定費の両方から計算する。',
+      fields: [{ label: '予算差異', unit: '円', answer: budget, diff: true }, { label: '能率差異', unit: '円', answer: eff, diff: true }, { label: '操業度差異', unit: '円', answer: vol, diff: true }],
+      steps: [
+        `固定費率 = ${nf(F)}円 ÷ ${nf(B)}時間 = ${nf(f)}円。標準配賦率 = ${nf(v)}円 + ${nf(f)}円 = ${nf(v + f)}円`,
+        `標準操業度 = ${hu}時間 × ${nf(n)}個 = ${nf(Hs)}時間`,
+        `予算差異 = 予算許容額（${nf(v)}円 × ${nf(Ha)}時間 + ${nf(F)}円 = ${nf(allowed)}円）− 実際発生額 ${nf(A)}円 = ${diffStr(budget)}`,
+        `能率差異 = 標準配賦率 ${nf(v + f)}円 ×（標準 ${nf(Hs)}時間 − 実際 ${nf(Ha)}時間）= ${diffStr(eff)}`,
+        `操業度差異 = 固定費率 ${nf(f)}円 ×（実際 ${nf(Ha)}時間 − 基準 ${nf(B)}時間）= ${diffStr(vol)}`,
+        `確認：標準配賦額 ${nf((v + f) * Hs)}円 − 実際 ${nf(A)}円 = ${yenStr((v + f) * Hs - A)}（3つの差異の合計と一致）`,
+      ],
+    };
+  }
+
+  function gCvp() {
+    const P = pick([1000, 1200, 1500, 2000, 2400, 3000]);
+    const vrP = pick([40, 50, 60, 70, 75]);
+    const uv = (P * vrP) / 100, cm = P - uv;
+    const Nb = R(6, 40) * 100, F = cm * Nb, bep = P * Nb;
+    const k = R(2, 12) * 100, T = cm * k, target = P * (Nb + k);
+    const Sn = Nb + R(2, 15) * 100, S = P * Sn;
+    const msr = Math.round(((S - bep) / S) * 1000) / 10;
+    return {
+      title: 'CVP分析（損益分岐点・目標利益・安全余裕率）', text: '製品Aの1年間の計画データは次のとおり。',
+      given: [['販売単価', `${nf(P)}円`], ['製品1個あたりの変動費', `${nf(uv)}円`], ['固定費（年間）', `${nf(F)}円`], ['計画販売量', `${nf(Sn)}個`], ['目標営業利益', `${nf(T)}円`]],
+      ask: '損益分岐点の売上高、目標営業利益を達成する売上高、計画での安全余裕率（％、小数第2位を四捨五入）を求めなさい。',
+      fields: [{ label: '損益分岐点の売上高', unit: '円', answer: bep }, { label: '目標営業利益を達成する売上高', unit: '円', answer: target }, { label: '安全余裕率', unit: '%', answer: msr }],
+      steps: [
+        `貢献利益率 =（${nf(P)}円 − ${nf(uv)}円）÷ ${nf(P)}円 = ${100 - vrP}%`,
+        `損益分岐点の売上高 = 固定費 ${nf(F)}円 ÷ ${100 - vrP}% = ${nf(bep)}円（${nf(Nb)}個）`,
+        `目標営業利益を達成する売上高 =（固定費 ${nf(F)}円 + 目標利益 ${nf(T)}円）÷ ${100 - vrP}% = ${nf(target)}円`,
+        `計画売上高 = ${nf(P)}円 × ${nf(Sn)}個 = ${nf(S)}円`,
+        `安全余裕率 =（${nf(S)}円 − ${nf(bep)}円）÷ ${nf(S)}円 = ${msr.toFixed(1)}%`,
+      ],
+    };
+  }
+
+  function gDirect() {
+    for (let tries = 0; tries < 50; tries++) {
+      const price = pick([2000, 2500, 3000, 4000, 5000]);
+      const vm = (price * pick([30, 35, 40, 45])) / 100;
+      const vs = pick([100, 150, 200, 250]);
+      const fmU = pick([200, 300, 400, 500, 600]);
+      const N = R(10, 40) * 100, endInv = R(1, 8) * 100;
+      if (endInv >= N) continue;
+      const sold = N - endInv, Fm = fmU * N, Fs = R(10, 60) * 10000;
+      const cmTotal = sold * (price - vm - vs);
+      const direct = cmTotal - Fm - Fs;
+      const gross = sold * (price - vm - fmU);
+      const absorb = gross - (vs * sold + Fs);
+      if (direct <= 0) continue;
+      return {
+        title: '直接原価計算と全部原価計算の営業利益', text: '期首の製品・仕掛品はなく、期末仕掛品もない。固定製造原価は生産量にもとづいて製品に配賦する。',
+        given: [['販売単価', `${nf(price)}円`], ['製品1個あたりの変動製造原価', `${nf(vm)}円`], ['製品1個あたりの変動販売費', `${nf(vs)}円`], ['固定製造原価（年間）', `${nf(Fm)}円`], ['固定販売費・一般管理費（年間）', `${nf(Fs)}円`], ['生産量', `${nf(N)}個`], ['販売量', `${nf(sold)}個`]],
+        ask: '直接原価計算と全部原価計算の営業利益をそれぞれ求めなさい。',
+        fields: [{ label: '直接原価計算の営業利益', unit: '円', answer: direct }, { label: '全部原価計算の営業利益', unit: '円', answer: absorb }],
+        steps: [
+          `貢献利益 =（${nf(price)}円 − ${nf(vm)}円 − ${nf(vs)}円）× ${nf(sold)}個 = ${nf(cmTotal)}円`,
+          `直接原価計算の営業利益 = ${nf(cmTotal)}円 − 固定製造原価 ${nf(Fm)}円 − 固定販管費 ${nf(Fs)}円 = ${nf(direct)}円`,
+          `製品1個あたりの固定製造原価 = ${nf(Fm)}円 ÷ ${nf(N)}個 = ${nf(fmU)}円`,
+          `全部原価計算の売上総利益 =（${nf(price)}円 − ${nf(vm)}円 − ${nf(fmU)}円）× ${nf(sold)}個 = ${nf(gross)}円`,
+          `全部原価計算の営業利益 = ${nf(gross)}円 −（変動販売費 ${nf(vs * sold)}円 + 固定販管費 ${nf(Fs)}円）= ${nf(absorb)}円`,
+          `差 ${nf(absorb - direct)}円 = 期末製品 ${nf(endInv)}個 × ${nf(fmU)}円。全部原価計算では固定製造原価の一部が在庫として翌期に繰り越されるため。`,
+        ],
+      };
+    }
+    return gCvp();
+  }
+
+  function gProcess() {
+    const fifo = Math.random() < 0.5;
+    const b = R(2, 8) * 50, pb = pick([40, 50, 60]);
+    const c = R(10, 30) * 100;
+    const e = R(2, 8) * 50, pe = pick([20, 40, 60, 80]);
+    const i = c + e - b;
+    const eqB = (b * pb) / 100, eqE = (e * pe) / 100;
+    const um = pick([100, 120, 150, 180, 200, 250]), uc = pick([60, 80, 100, 120, 150]);
+    let Mb, Cb, Mi, Ci;
+    const convCur = c + eqE - eqB;
+    if (!fifo) {
+      const TM = um * (c + e), TC = uc * (c + eqE);
+      Mb = Math.round((TM * R(5, 15)) / 100 / 1000) * 1000; Mi = TM - Mb;
+      Cb = Math.round((TC * R(3, 10)) / 100 / 1000) * 1000; Ci = TC - Cb;
+    } else {
+      Mi = um * i; Ci = uc * convCur;
+      Mb = b * pick([90, 100, 110, 120, 140]); Cb = eqB * pick([50, 60, 80, 100, 120]);
+    }
+    const endWip = e * um + eqE * uc;
+    const total = Mb + Cb + Mi + Ci, done = total - endWip;
+    const steps = fifo ? [
+      `材料は始点投入なので、月末仕掛品の材料費は当月投入分の単価で計算：${nf(Mi)}円 ÷ ${nf(i)}個 = ${nf(um)}円`,
+      `当月の加工費の換算量 = 完成 ${nf(c)}個 + 月末 ${nf(e)}個×${pe}% − 月初 ${nf(b)}個×${pb}% = ${nf(convCur)}個`,
+      `当月の加工費の単価 = ${nf(Ci)}円 ÷ ${nf(convCur)}個 = ${nf(uc)}円`,
+      `月末仕掛品原価 = ${nf(e)}個 × ${nf(um)}円 + ${nf(eqE)}個 × ${nf(uc)}円 = ${nf(endWip)}円`,
+      `完成品総合原価 = 月初 ${nf(Mb + Cb)}円 + 当月 ${nf(Mi + Ci)}円 − 月末 ${nf(endWip)}円 = ${nf(done)}円`,
+    ] : [
+      `材料費の単価 =（${nf(Mb)}円 + ${nf(Mi)}円）÷（完成 ${nf(c)}個 + 月末 ${nf(e)}個）= ${nf(um)}円`,
+      `月末仕掛品の加工換算量 = ${nf(e)}個 × ${pe}% = ${nf(eqE)}個`,
+      `加工費の単価 =（${nf(Cb)}円 + ${nf(Ci)}円）÷（${nf(c)}個 + ${nf(eqE)}個）= ${nf(uc)}円`,
+      `月末仕掛品原価 = ${nf(e)}個 × ${nf(um)}円 + ${nf(eqE)}個 × ${nf(uc)}円 = ${nf(endWip)}円`,
+      `完成品総合原価 = 総額 ${nf(total)}円 − 月末 ${nf(endWip)}円 = ${nf(done)}円`,
+    ];
+    return {
+      title: `単純総合原価計算（${fifo ? '先入先出法' : '平均法'}）`, text: `材料はすべて工程の始点で投入する。月末仕掛品の評価は${fifo ? '先入先出法' : '平均法'}による。`,
+      given: [['月初仕掛品', `${nf(b)}個（加工進捗度${pb}%）`], ['　月初の直接材料費', `${nf(Mb)}円`], ['　月初の加工費', `${nf(Cb)}円`], ['当月投入', `${nf(i)}個`], ['　当月の直接材料費', `${nf(Mi)}円`], ['　当月の加工費', `${nf(Ci)}円`], ['完成品', `${nf(c)}個`], ['月末仕掛品', `${nf(e)}個（加工進捗度${pe}%）`]],
+      ask: '月末仕掛品原価と完成品総合原価を求めなさい。',
+      fields: [{ label: '月末仕掛品原価', unit: '円', answer: endWip }, { label: '完成品総合原価', unit: '円', answer: done }],
+      steps,
+    };
+  }
+
+  function gDepr() {
+    if (Math.random() < 0.5) {
+      const n = pick([4, 5, 6, 8, 10]);
+      const A = n * 12 * R(5, 60) * 1000;
+      const m = pick([5, 6, 7, 8, 9, 10, 11, 12, 1, 2]);
+      const k = m >= 4 ? 16 - m : 4 - m;
+      const year = A / n, dep = (year * k) / 12;
+      return {
+        title: '減価償却（定額法・期中取得）', text: `会計期間は4月1日〜3月31日。備品を${m}月1日に取得し、すぐに使い始めた。`,
+        given: [['取得原価', `${nf(A)}円`], ['耐用年数', `${n}年`], ['残存価額', 'ゼロ'], ['償却方法', '定額法（月割計算）']],
+        ask: '取得した年度の減価償却費を求めなさい。',
+        fields: [{ label: '減価償却費', unit: '円', answer: dep }],
+        steps: [`1年分 = ${nf(A)}円 ÷ ${n}年 = ${nf(year)}円`, `使用した月数 = ${m}月から3月までの${k}か月`, `減価償却費 = ${nf(year)}円 × ${k}/12 = ${nf(dep)}円`],
+      };
+    }
+    const [n, rate] = pick([[4, 0.5], [5, 0.4], [8, 0.25], [10, 0.2]]);
+    const A = R(10, 90) * 10000;
+    const y1 = A * rate, y2 = (A - y1) * rate;
+    return {
+      title: '減価償却（200%定率法・2年目）', text: '会計期間は4月1日〜3月31日。機械を期首（4月1日）に取得した。',
+      given: [['取得原価', `${nf(A)}円`], ['耐用年数', `${n}年`], ['償却率', rate.toFixed(3)], ['償却方法', '200%定率法（償却保証額との比較は不要）']],
+      ask: '2年目の減価償却費を求めなさい。',
+      fields: [{ label: '2年目の減価償却費', unit: '円', answer: y2 }],
+      steps: [`1年目 = ${nf(A)}円 × ${rate.toFixed(3)} = ${nf(y1)}円`, `2年目の期首帳簿価額 = ${nf(A)}円 − ${nf(y1)}円 = ${nf(A - y1)}円`, `2年目 = ${nf(A - y1)}円 × ${rate.toFixed(3)} = ${nf(y2)}円`],
+    };
+  }
+
+  function gTaxEffect() {
+    const t = pick([30, 35, 40]);
+    const bad = Math.random() < 0.5;
+    const Y = R(10, 80) * 10000, D = R(2, 15) * 10000, X = Y + D;
+    const dta = (D * t) / 100;
+    return {
+      title: '税効果会計（繰延税金資産）', text: bad ? `当期末に貸倒引当金を${nf(X)}円繰り入れたが、税法上の繰入限度額は${nf(Y)}円だった。限度超過額は損金に算入されない。` : `当期の減価償却費は${nf(X)}円だが、税法上の償却限度額は${nf(Y)}円だった。限度超過額は損金に算入されない。`,
+      given: [['法定実効税率', `${t}%`], ['前期から繰り越した一時差異', 'なし']],
+      ask: '当期に計上する繰延税金資産の額を求めなさい。',
+      fields: [{ label: '繰延税金資産', unit: '円', answer: dta }],
+      steps: [`将来減算一時差異 = ${nf(X)}円 − ${nf(Y)}円 = ${nf(D)}円`, `繰延税金資産 = ${nf(D)}円 × ${t}% = ${nf(dta)}円`, `仕訳：（借）繰延税金資産 ${nf(dta)}（貸）法人税等調整額 ${nf(dta)}`],
+    };
+  }
+
+  function gConsol() {
+    const X = pick([60, 70, 75, 80, 90]);
+    const K = R(10, 50) * 100000, RE = R(5, 40) * 100000, eq = K + RE;
+    const share = (eq * X) / 100, gw = R(1, 20) * 200000;
+    const C = share + gw, nci = eq - share, am = gw / 20;
+    return {
+      title: '連結：のれんと非支配株主持分', text: `P社はX1年3月31日にS社の発行済株式の${X}%を${nf(C)}円で取得し、支配を獲得した。S社の資産・負債の時価は帳簿価額と同じ。のれんは20年で定額法により償却する。`,
+      given: [['S社の資本金（同日）', `${nf(K)}円`], ['S社の利益剰余金（同日）', `${nf(RE)}円`]],
+      ask: 'のれん、支配獲得日の非支配株主持分、のれんの1年分の償却額を求めなさい。',
+      fields: [{ label: 'のれん', unit: '円', answer: gw }, { label: '非支配株主持分', unit: '円', answer: nci }, { label: 'のれんの償却額（1年分）', unit: '円', answer: am }],
+      steps: [`S社の資本 = ${nf(K)}円 + ${nf(RE)}円 = ${nf(eq)}円`, `P社持分 = ${nf(eq)}円 × ${X}% = ${nf(share)}円`, `のれん = 取得原価 ${nf(C)}円 − ${nf(share)}円 = ${nf(gw)}円`, `非支配株主持分 = ${nf(eq)}円 × ${100 - X}% = ${nf(nci)}円`, `のれん償却額 = ${nf(gw)}円 ÷ 20年 = ${nf(am)}円`],
+    };
+  }
+
+  const GENS = {
+    fp2: [],
+    boki2: [
+      { id: 'mat', name: '直接材料費の差異分析', area: 'hyojun', fn: gMaterial },
+      { id: 'lab', name: '直接労務費の差異分析', area: 'hyojun', fn: gLabor },
+      { id: 'oh', name: '製造間接費の差異分析', area: 'hyojun', fn: gOverhead },
+      { id: 'cvp', name: 'CVP分析', area: 'cvp', fn: gCvp },
+      { id: 'dc', name: '直接原価計算と全部原価計算', area: 'cvp', fn: gDirect },
+      { id: 'proc', name: '単純総合原価計算', area: 'sogo', fn: gProcess },
+      { id: 'depr', name: '減価償却', area: 'kobetsu', fn: gDepr },
+      { id: 'taxe', name: '税効果会計', area: 'kobetsu', fn: gTaxEffect },
+      { id: 'consol', name: '連結：のれん・非支配株主持分', area: 'renketsu', fn: gConsol },
+    ],
+  };
+  window.StudyDrills = GENS;
+
+  const drill = { sid: uid(), exam: 'boki2', q: null, prev: null, shownAt: 0, answered: false, count: 0, total: 0, correct: 0, ms: 0, perArea: {} };
+  const drillExams = () => KEYS.filter((k) => GENS[k].length);
+  function setupDrillControls() {
+    const list = drillExams();
+    if (!list.includes(drill.exam)) drill.exam = list[0];
+    $('#dr-exam-seg').innerHTML = list.map((k) => `<input type="radio" name="dr-exam" id="dr-exam-${k}" value="${k}"${k === drill.exam ? ' checked' : ''}><label for="dr-exam-${k}">${esc(EXAMS[k].name)}</label>`).join('');
+    $('#dr-exam-field').hidden = list.length < 2;
+    fillTopics();
+  }
+  function fillTopics() {
+    $('#dr-topic').innerHTML = '<option value="auto">おまかせ（正答率の低い論点を多めに）</option>' + GENS[drill.exam].map((g) => `<option value="${g.id}">${esc(g.name)}</option>`).join('');
+  }
+  function pickAuto(exam) {
+    const st = Object.fromEntries(areaStats(exam).map((s) => [s.id, s]));
+    const gens = GENS[exam];
+    const w = gens.map((g) => { const s = st[g.area]; const acc = s && s.acc !== null ? s.acc : 0.4; return Math.max(0.08, 1 - acc) * (drill.prev === g.id ? 0.3 : 1); });
+    let r = Math.random() * w.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < gens.length; i++) { r -= w[i]; if (r <= 0) return gens[i]; }
+    return gens[gens.length - 1];
+  }
+  function newQuestion() {
+    const gens = GENS[drill.exam];
+    if (!gens || !gens.length) return;
+    const topic = $('#dr-topic').value;
+    const g = topic && topic !== 'auto' ? gens.find((x) => x.id === topic) || gens[0] : pickAuto(drill.exam);
+    const q = g.fn();
+    q.genId = g.id; q.exam = drill.exam; q.area = q.area || g.area;
+    drill.q = q; drill.prev = g.id; drill.shownAt = Date.now(); drill.answered = false; drill.count += 1;
+    const fieldHtml = q.fields.map((f, i) => `<div class="ans" id="dr-ans-${i}">
+        <label for="dr-a${i}">${esc(f.label)}</label>
+        <div class="ans-row"><div class="ans-in"><input id="dr-a${i}" inputmode="${f.unit === '%' ? 'decimal' : 'numeric'}" autocomplete="off" enterkeyhint="${i === q.fields.length - 1 ? 'done' : 'next'}"><span class="unit">${esc(f.unit)}</span></div>
+        ${f.diff ? `<div class="seg" role="radiogroup" aria-label="${esc(f.label)}の向き"><input type="radio" name="dr-s${i}" id="dr-s${i}-u" value="-1"><label for="dr-s${i}-u">不利（借方）</label><input type="radio" name="dr-s${i}" id="dr-s${i}-f" value="1"><label for="dr-s${i}-f">有利（貸方）</label></div>` : ''}</div>
+        <p class="ans-result" id="dr-r${i}" hidden></p>
+      </div>`).join('');
+    $('#dr-card').innerHTML = `
+      <div class="q-head"><span class="chip">${esc(areaName(q.exam, q.area))}</span><span class="muted small">今回 ${drill.count}問目</span></div>
+      <h2 class="q-title">${esc(q.title)}</h2>
+      ${q.text ? `<p class="q-text">${esc(q.text)}</p>` : ''}
+      <table class="given"><tbody>${q.given.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
+      <p class="q-ask">${esc(q.ask)}</p>
+      <form id="dr-form" class="answers" novalidate>${fieldHtml}
+        <p class="form-error" id="dr-error" hidden></p>
+        <div class="actions" id="dr-actions"><button type="submit" class="btn">答え合わせ</button><button type="button" class="btn ghost" data-dr="skip">別の問題にする</button></div>
+      </form>
+      <div class="explain" id="dr-explain" hidden></div>`;
+  }
+  const fmtAnswer = (f) => (f.unit === '%' ? `${f.answer.toFixed(1)}%` : f.diff ? `${nf(Math.abs(f.answer))}円（${f.answer < 0 ? '不利・借方' : '有利・貸方'}）` : yenStr(f.answer));
+  function checkAnswer() {
+    const q = drill.q;
+    if (!q || drill.answered) return;
+    const vals = [];
+    for (let i = 0; i < q.fields.length; i++) {
+      const f = q.fields[i], raw = $('#dr-a' + i).value.trim(), v = parseNum(raw);
+      if (raw === '' || Number.isNaN(v)) return showErr('dr', `「${f.label}」を数字で入れてください。`);
+      let sign = 1;
+      if (f.diff) { const s = radioVal('dr-s' + i); if (!s) return showErr('dr', `「${f.label}」が不利か有利かを選んでください。`); sign = Number(s); }
+      vals.push(f.diff ? Math.abs(v) * sign : v);
+    }
+    hideErr('dr');
+    drill.answered = true;
+    let ok = 0;
+    q.fields.forEach((f, i) => {
+      const right = Math.abs(vals[i] - f.answer) <= (f.unit === '%' ? 0.0501 : 0.5);
+      if (right) ok += 1;
+      const r = $('#dr-r' + i); r.hidden = false; r.className = 'ans-result ' + (right ? 'ok' : 'ng');
+      r.textContent = right ? '✓ 正解' : `✗ 正解は ${fmtAnswer(f)}`;
+      $('#dr-ans-' + i).classList.add(right ? 'is-ok' : 'is-ng');
+    });
+    $('#dr-form').querySelectorAll('input').forEach((el) => { el.disabled = true; });
+    $('#dr-actions').innerHTML = `<p class="score ${ok === q.fields.length ? 'ok' : 'ng'}">${ok} / ${q.fields.length} 正解</p><button type="button" class="btn" data-dr="next">次の問題</button>`;
+    const ex = $('#dr-explain');
+    ex.innerHTML = `<h3>解き方</h3><ol class="steps">${q.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`;
+    ex.hidden = false;
+    const ms = Math.min(10 * 60000, Date.now() - drill.shownAt);
+    drill.total += q.fields.length; drill.correct += ok; drill.ms += ms;
+    recordDrill(q.exam, q.area, q.fields.length, ok, ms);
+    renderSession();
+    const nextBtn = $('[data-dr="next"]'); if (nextBtn) nextBtn.focus();
+  }
+  function recordDrill(exam, area, nQ, nC, ms) {
+    const key = exam + ':' + area;
+    const a = drill.perArea[key] || (drill.perArea[key] = { exam, area, questions: 0, correct: 0, ms: 0, id: `drill-${drill.sid}-${exam}-${area}`, createdAt: Date.now(), chain: Promise.resolve() });
+    a.questions += nQ; a.correct += nC; a.ms += ms;
+    const data = { date: todayStr(), exam, area, minutes: Math.max(1, Math.round(a.ms / 60000)), place: radioVal('dr-place') || 'other', kind: 'drill', questions: a.questions, correct: a.correct, note: 'ドリル', createdAt: a.createdAt };
+    a.chain = a.chain.then(() => write(() => STORE.set('logs/' + a.id, data)));
+  }
+  function renderSession() {
+    if (!drill.total) { $('#dr-session').innerHTML = '<p class="empty">まだ解いていません。</p>'; return; }
+    const parts = Object.values(drill.perArea).map((a) => `${areaName(a.exam, a.area)} ${a.correct}/${a.questions}`).join('・');
+    $('#dr-session').innerHTML = `<div class="stat-row"><span><b>${drill.correct}</b> / ${drill.total}問正解（${pct0(drill.correct / drill.total)}）</span><span class="muted">${esc(fmtMin(Math.max(1, Math.round(drill.ms / 60000))))}</span></div><p class="hint">${esc(parts)}</p>`;
+  }
+
   /* ===================== routing & events ===================== */
   function route() {
     const h = (location.hash || '').replace('#', '');
@@ -816,11 +1211,19 @@ dialog::backdrop { background: var(--overlay); }
       $('#view-' + v).hidden = v !== ui.view;
       const t = $('#tab-' + v); t.setAttribute('aria-selected', String(v === ui.view)); t.tabIndex = v === ui.view ? 0 : -1;
     }
+    if (ui.view === 'drill' && !drill.q) newQuestion();
     if (D) schedule();
   }
   function go(v) { if (location.hash !== '#' + v) location.hash = v; else route(); }
 
   function initUI() {
+    setupDrillControls();
+    document.addEventListener('change', (e) => {
+      if (e.target.name === 'dr-exam') { drill.exam = e.target.value; fillTopics(); newQuestion(); }
+      if (e.target.id === 'dr-topic') newQuestion();
+    });
+    document.addEventListener('submit', (e) => { if (e.target.id === 'dr-form') { e.preventDefault(); checkAnswer(); } });
+    document.addEventListener('click', (e) => { const b = e.target.closest('[data-dr]'); if (b) { newQuestion(); const first = $('#dr-a0'); if (first) first.focus({ preventScroll: true }); $('#dr-card').scrollIntoView({ block: 'start', behavior: 'smooth' }); } });
     document.querySelectorAll('.tab').forEach((b) => b.addEventListener('click', () => go(b.dataset.tab)));
     $('.tabs').addEventListener('keydown', (e) => {
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
