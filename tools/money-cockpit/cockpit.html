@@ -1431,7 +1431,7 @@ input[type="file"] { padding: 8px; background: var(--surface); margin-top: 8px; 
     const csv = kind === 'pay' ? paymentsCsv() : kind === 'trades' ? tradesCsv() : pnlCsv();
     const filename = kind === 'pay' ? `返済の記録_${stamp}.csv` : kind === 'trades' ? `トレード日誌_${stamp}.csv` : `特別損益_${stamp}.csv`;
     if (DOWNLOADS) {
-      try { await DOWNLOADS.save({ filename, data: '﻿' + csv }); toast('保存しました'); return; } catch (e) {
+      try { await DOWNLOADS.save({ filename, data: '\uFEFF' + csv }); toast('保存しました'); return; } catch (e) {
         const code = e && e.code;
         if (code === 'declined') return;
         if (code === 'rate_limited') { toast('少し待ってからもう一度押してください'); return; }
@@ -1624,8 +1624,8 @@ input[type="file"] { padding: 8px; background: var(--surface); margin-top: 8px; 
   ];
   function decodeText(buf) {
     let text = new TextDecoder('utf-8').decode(buf);
-    if (text.includes('�')) { try { text = new TextDecoder('shift_jis').decode(buf); } catch (e) { /* keep utf-8 */ } }
-    return text.replace(/^﻿/, '');
+    if (text.includes('\uFFFD')) { try { text = new TextDecoder('shift_jis').decode(buf); } catch (e) { /* keep utf-8 */ } }
+    return text.replace(/^\uFEFF/, '');
   }
   function parseCsv(text) {
     const rows = [];

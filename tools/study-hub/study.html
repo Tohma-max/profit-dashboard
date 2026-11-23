@@ -1521,7 +1521,7 @@ dialog::backdrop { background: var(--overlay); }
       for (const l of [...S.logs].sort((a, b) => a.date.localeCompare(b.date))) lines.push([l.date, EXAMS[l.exam] ? EXAMS[l.exam].name : '', cell(areaName(l.exam, l.area)), num(l.minutes), PLACES[l.place] || '', KINDS[l.kind] || '', has(l.questions) ? num(l.questions) : '', has(l.correct) ? num(l.correct) : '', cell(l.note || '')].join(','));
       const csv = lines.join('\r\n') + '\r\n';
       if (DOWNLOADS) {
-        try { await DOWNLOADS.save({ filename: `学習記録_${todayStr().replace(/-/g, '')}.csv`, data: '﻿' + csv }); toast('保存しました'); return; } catch (err) { if (err && (err.code === 'declined' || err.code === 'rate_limited')) return; }
+        try { await DOWNLOADS.save({ filename: `学習記録_${todayStr().replace(/-/g, '')}.csv`, data: '\uFEFF' + csv }); toast('保存しました'); return; } catch (err) { if (err && (err.code === 'declined' || err.code === 'rate_limited')) return; }
       }
       $('#exp-fallback').hidden = false; $('#exp-text').value = csv;
     });
